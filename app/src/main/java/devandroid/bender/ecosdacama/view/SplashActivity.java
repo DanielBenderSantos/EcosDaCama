@@ -27,7 +27,7 @@ public class SplashActivity extends AppCompatActivity {
             public void run() {
 
                 EcosDaCamaDB db = new EcosDaCamaDB(SplashActivity.this);
-                Intent telaPrincipal = new Intent(SplashActivity.this, EcosDaCamaActivity.class);
+                Intent telaPrincipal = new Intent(SplashActivity.this, HomeSonhosActivity.class);
 
                 startActivity(telaPrincipal);
                 finish();
