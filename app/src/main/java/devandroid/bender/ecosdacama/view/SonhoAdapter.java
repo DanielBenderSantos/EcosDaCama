@@ -1,37 +1,60 @@
 package devandroid.bender.ecosdacama.view;
 
+import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import devandroid.bender.ecosdacama.R;
 import devandroid.bender.ecosdacama.model.Sonho;
+import devandroid.bender.ecosdacama.database.EcosDaCamaDB;
 import java.util.List;
 
 public class SonhoAdapter extends RecyclerView.Adapter<SonhoAdapter.SonhoViewHolder> {
 
     private List<Sonho> sonhos;
+    private OnItemClickListener listener;
+    private EcosDaCamaDB dbHelper;
 
-    public SonhoAdapter(List<Sonho> sonhos) {
+    public SonhoAdapter(List<Sonho> sonhos, OnItemClickListener listener, EcosDaCamaDB dbHelper) {
         this.sonhos = sonhos;
+        this.listener = listener;
+        this.dbHelper = dbHelper;
     }
 
     @NonNull
     @Override
     public SonhoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_dream_card, parent, false); // Certifique-se de ter o layout item_sonho.xml
-        return new SonhoViewHolder(itemView);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_dream_card, parent, false);
+        return new SonhoViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull SonhoViewHolder holder, int position) {
         Sonho sonho = sonhos.get(position);
-        holder.tvTituloSonho.setText(sonho.getTitulo());
-        holder.tvDescricaoSonho.setText(sonho.getSonho());
-        holder.tvDataHora.setText(sonho.getData() + " - " + sonho.getHora());
+        holder.bind(sonho);
+
+        // Ao clicar no botão de excluir, exibe o AlertDialog de confirmação
+        holder.btnDelete.setOnClickListener(v -> {
+            new AlertDialog.Builder(holder.itemView.getContext())
+                    .setTitle("Excluir sonho")
+                    .setMessage("Você tem certeza que deseja excluir este sonho?")
+                    .setPositiveButton("Sim", (dialog, which) -> {
+                        // Código para deletar o sonho
+                        dbHelper.deleteSonho(sonho.getId());
+                        // Atualiza a lista de sonhos
+                        sonhos.remove(position);
+                        notifyItemRemoved(position);
+                        Toast.makeText(holder.itemView.getContext(), "Sonho excluído!", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Não", null)
+                    .show();
+        });
     }
 
     @Override
@@ -39,17 +62,31 @@ public class SonhoAdapter extends RecyclerView.Adapter<SonhoAdapter.SonhoViewHol
         return sonhos.size();
     }
 
-    public static class SonhoViewHolder extends RecyclerView.ViewHolder {
+    class SonhoViewHolder extends RecyclerView.ViewHolder {
+        TextView titulo, data;
+        ImageButton btnDelete;
 
-        public TextView tvTituloSonho;
-        public TextView tvDescricaoSonho;
-        public TextView tvDataHora;
-
-        public SonhoViewHolder(View itemView) {
+        SonhoViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvTituloSonho = itemView.findViewById(R.id.tvTituloSonho);
-            tvDescricaoSonho = itemView.findViewById(R.id.tvDescricaoSonho);
-            tvDataHora = itemView.findViewById(R.id.tvDataHora);
+            titulo = itemView.findViewById(R.id.tituloCard);
+            data = itemView.findViewById(R.id.dataCard);
+            btnDelete = itemView.findViewById(R.id.btnDelete); // Certifique-se de que esse botão existe no seu XML
         }
+
+        void bind(final Sonho sonho) {
+            titulo.setText(sonho.getTitulo());
+            data.setText(sonho.getData());
+
+            itemView.setOnClickListener(v -> listener.onItemClick(sonho));
+
+            // Ao clicar no botão de excluir, chamamos o método de exclusão
+            btnDelete.setOnClickListener(v -> listener.onDeleteSonho(sonho));
+        }
+    }
+
+    // Interface para comunicação entre o adapter e a activity
+    public interface OnItemClickListener {
+        void onItemClick(Sonho sonho);
+        void onDeleteSonho(Sonho sonho);
     }
 }

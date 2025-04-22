@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFF"
     tools:context=".view.EcosDaCamaActivity">
 
     <LinearLayout
@@ -62,7 +61,7 @@
             android:layout_height="wrap_content"
             android:text="Título"
             android:textSize="20sp"
-            android:textColor="#000"
+            android:textColor="#555"
             android:layout_marginTop="16dp" />
 
         <EditText
@@ -82,7 +81,7 @@
             android:layout_height="wrap_content"
             android:text="História"
             android:textSize="20sp"
-            android:textColor="#000"
+            android:textColor="#555"
             android:layout_marginTop="24dp" />
 
         <ImageButton
@@ -101,7 +100,10 @@
             android:layout_height="wrap_content"
             android:hint="Descrição do sonho"
             android:background="@drawable/rounded_background"
-            android:padding="12dp"/>
+            android:padding="12dp"
+            android:textColor="#333"
+            android:layout_marginTop="8dp"
+            />
 
         <!-- Botões (mantidos do seu código original) -->
         <Button

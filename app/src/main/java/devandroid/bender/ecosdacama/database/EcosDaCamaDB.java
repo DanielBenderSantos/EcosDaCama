@@ -93,5 +93,9 @@ public class EcosDaCamaDB extends SQLiteOpenHelper {
         db.close();
         return sonhosList;
     }
-
+    public void deleteSonho(int sonhoId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_SONHOS, COLUMN_ID + " = ?", new String[]{String.valueOf(sonhoId)});
+        db.close();
+    }
 }

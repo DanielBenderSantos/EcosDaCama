@@ -22,6 +22,7 @@
             android:name=".view.HomeSonhosActivity"
             android:exported="false" />
 
+
         <activity
             android:name=".view.SplashActivity"
             android:exported="true">

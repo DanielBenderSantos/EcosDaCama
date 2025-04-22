@@ -36,6 +36,7 @@ public class EcosDaCamaActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_SPEECH_INPUT = 1;
     private EcosDaCamaDB dbHelper;
     private Calendar calendar;
+    private int sonhoId = -1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -57,7 +58,21 @@ public class EcosDaCamaActivity extends AppCompatActivity {
         calendar = Calendar.getInstance();
         updateDateTimeDisplay();
 
-        // Configura o clique para selecionar data
+        // Verifica se veio um sonho para editar
+        if (getIntent().hasExtra("sonho_id")) {
+            sonhoId = getIntent().getIntExtra("sonho_id", -1);
+            String titulo = getIntent().getStringExtra("titulo");
+            String descricao = getIntent().getStringExtra("descricao");
+            String data = getIntent().getStringExtra("data");
+            String hora = getIntent().getStringExtra("hora");
+
+            editTitulo.setText(titulo);
+            editSonho.setText(descricao);
+            tvDate.setText(data);
+            tvTime.setText(hora);
+        }
+
+        // Selecionar data
         tvDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -65,7 +80,7 @@ public class EcosDaCamaActivity extends AppCompatActivity {
             }
         });
 
-        // Configura o clique para selecionar hora
+        // Selecionar hora
         tvTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -73,7 +88,7 @@ public class EcosDaCamaActivity extends AppCompatActivity {
             }
         });
 
-        // Ação do microfone para reconhecimento de fala
+        // Reconhecimento de voz
         btnMicrofone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -90,7 +105,7 @@ public class EcosDaCamaActivity extends AppCompatActivity {
             }
         });
 
-        // Ação do botão Salvar
+        // Salvar sonho
         btnSalvar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -99,12 +114,12 @@ public class EcosDaCamaActivity extends AppCompatActivity {
                 String data = tvDate.getText().toString();
                 String hora = tvTime.getText().toString();
 
-                // Salvar no banco de dados
                 salvarSonho(titulo, sonho, data, hora);
 
-                // Desabilitar o botão e mostrar uma mensagem
                 btnSalvar.setEnabled(false);
-                Toast.makeText(EcosDaCamaActivity.this, "Sonho salvo!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EcosDaCamaActivity.this, sonhoId != -1 ? "Sonho atualizado!" : "Sonho salvo!", Toast.LENGTH_SHORT).show();
+
+                finish(); // Fecha a tela e volta para a anterior
             }
         });
     }
@@ -141,19 +156,17 @@ public class EcosDaCamaActivity extends AppCompatActivity {
                 },
                 calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE),
-                true // formato 24 horas
+                true
         );
         timePickerDialog.show();
     }
 
     private void updateDateTimeDisplay() {
-        // Formata a data como "dd/MM/yyyy"
         String dateText = String.format(Locale.getDefault(), "%02d/%02d/%04d",
                 calendar.get(Calendar.DAY_OF_MONTH),
-                calendar.get(Calendar.MONTH) + 1, // Mês começa em 0
+                calendar.get(Calendar.MONTH) + 1,
                 calendar.get(Calendar.YEAR));
 
-        // Formata a hora como "HH:mm"
         String timeText = String.format(Locale.getDefault(), "%02d:%02d",
                 calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE));
@@ -184,7 +197,12 @@ public class EcosDaCamaActivity extends AppCompatActivity {
         values.put(EcosDaCamaDB.COLUMN_DATA, data);
         values.put(EcosDaCamaDB.COLUMN_HORA, hora);
 
-        db.insert(EcosDaCamaDB.TABLE_SONHOS, null, values);
+        if (sonhoId != -1) {
+            db.update(EcosDaCamaDB.TABLE_SONHOS, values, "id = ?", new String[]{String.valueOf(sonhoId)});
+        } else {
+            db.insert(EcosDaCamaDB.TABLE_SONHOS, null, values);
+        }
+
         db.close();
     }
 }
