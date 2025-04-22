@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 
 import devandroid.bender.ecosdacama.R;
-import devandroid.bender.ecosdacama.database.GasEtaDB;
+import devandroid.bender.ecosdacama.database.EcosDaCamaDB;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -26,7 +26,7 @@ public class SplashActivity extends AppCompatActivity {
             @Override
             public void run() {
 
-                GasEtaDB db = new GasEtaDB(SplashActivity.this);
+                EcosDaCamaDB db = new EcosDaCamaDB(SplashActivity.this);
                 Intent telaPrincipal = new Intent(SplashActivity.this, EcosDaCamaActivity.class);
 
                 startActivity(telaPrincipal);
