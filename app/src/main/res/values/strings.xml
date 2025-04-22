@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Ecos Da Cama</string>
+    <string name="txt_titulo">Ecos Da Cama</string>
+    <string name="txt_hint_edit_gasolina">R$ Gasolina</string>
+    <string name="txt_hint_edit_etanol">R$ Etanol</string>
+    <string name="txt_hint_edit_nome_do_curso">Nome do Curso Desejado</string>
+    <string name="txt_hint_edit_telefone_contato">Telefone de contato</string>
+    <string name="txt_button_limpar">LIMPAR</string>
+    <string name="txt_button_salvar">SALVAR</string>
+    <string name="txt_button_calcular">CALCULAR</string>
+    <string name="txt_button_finalizar">FINALIZAR</string>
+    <string name="txt_resultado">RESULTADO</string>
+</resources>

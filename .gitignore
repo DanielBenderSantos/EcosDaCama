@@ -1,0 +1,42 @@
+# Gerado pelo Android Studio
+.gradle/
+.idea/
+local.properties
+*.iml
+
+# Build e saída
+/build/
+*/build/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Cache
+.cache/
+.cxx/
+*.log
+
+# Android específico
+captures/
+.externalNativeBuild/
+.navigation/
+output.json
+
+# Backup do Android Studio
+*.iws
+*.ipr
+*.bak
+
+# Keystores (NUNCA subir sua chave de assinatura)
+*.jks
+*.keystore
+
+# Arquivos pessoais
+*.swp
+*.tmp
+*.orig
+*.rej
+
+# Arquivos do Git
+!.gitignore

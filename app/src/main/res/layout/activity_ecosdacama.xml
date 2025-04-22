@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFF"
+    tools:context=".view.EcosDaCamaActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Cabeçalho com Hora e Data -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
+
+            <!-- Seletor de Hora -->
+            <TextView
+                android:id="@+id/tvTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Hora"
+                android:textSize="24sp"
+                android:textColor="#000"
+                android:background="@drawable/rounded_background"
+                android:padding="12dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <!-- Seletor de Data -->
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Data"
+                android:textSize="18sp"
+                android:textColor="#666"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/rounded_background"
+                android:padding="12dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+        </LinearLayout>
+
+        <!-- Divisor -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#EEE"
+            android:layout_marginVertical="8dp" />
+
+        <!-- Seção do Título -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Título"
+            android:textSize="20sp"
+            android:textColor="#000"
+            android:layout_marginTop="16dp" />
+
+        <EditText
+            android:id="@+id/editTituloSonho"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Título do seu sonho aqui"
+            android:textSize="16sp"
+            android:textColor="#333"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/rounded_background"
+            android:padding="12dp" />
+
+        <!-- Seção da História -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="História"
+            android:textSize="20sp"
+            android:textColor="#000"
+            android:layout_marginTop="24dp" />
+
+        <EditText
+            android:id="@+id/editSonho"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Descrição do sonho em detalhes aqui ou use um memorando de voz."
+            android:textSize="16sp"
+            android:textColor="#333"
+            android:layout_marginTop="8dp"
+            android:minLines="6"
+            android:maxLines="12"
+            android:inputType="textMultiLine"
+            android:gravity="top|start"
+            android:background="@drawable/rounded_background"
+            android:padding="12dp" />
+
+        <!-- Botões (mantidos do seu código original) -->
+        <Button
+            android:id="@+id/btnSalvar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Salvar sonho" />
+
+        <Button
+            android:id="@+id/btnFinalizar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Finalizar" />
+
+    </LinearLayout>
+</ScrollView>
