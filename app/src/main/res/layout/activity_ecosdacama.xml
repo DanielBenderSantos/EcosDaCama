@@ -85,20 +85,23 @@
             android:textColor="#000"
             android:layout_marginTop="24dp" />
 
+        <ImageButton
+            android:id="@+id/btnMicrofone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="Microfone"
+            android:layout_marginTop="16dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_btn_speak_now" /> <!-- Adicionando o ícone de microfone -->
+
+
         <EditText
             android:id="@+id/editSonho"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Descrição do sonho em detalhes aqui ou use um memorando de voz."
-            android:textSize="16sp"
-            android:textColor="#333"
-            android:layout_marginTop="8dp"
-            android:minLines="6"
-            android:maxLines="12"
-            android:inputType="textMultiLine"
-            android:gravity="top|start"
+            android:hint="Descrição do sonho"
             android:background="@drawable/rounded_background"
-            android:padding="12dp" />
+            android:padding="12dp"/>
 
         <!-- Botões (mantidos do seu código original) -->
         <Button
@@ -107,13 +110,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="Salvar sonho" />
-
-        <Button
-            android:id="@+id/btnFinalizar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Finalizar" />
 
     </LinearLayout>
 </ScrollView>
