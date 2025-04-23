@@ -12,7 +12,6 @@ import devandroid.bender.ecosdacama.database.EcosDaCamaDB;
 import devandroid.bender.ecosdacama.model.Sonho;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.List;
-
 public class HomeSonhosActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
