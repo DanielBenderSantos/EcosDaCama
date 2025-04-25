@@ -46,19 +46,21 @@ public class SonhoAdapter extends RecyclerView.Adapter<SonhoAdapter.SonhoViewHol
     }
 
     class SonhoViewHolder extends RecyclerView.ViewHolder {
-        TextView titulo, data;
+        TextView titulo, data, conteudo;
         ImageButton btnDelete;
 
         SonhoViewHolder(@NonNull View itemView) {
             super(itemView);
             titulo = itemView.findViewById(R.id.tituloCard);
             data = itemView.findViewById(R.id.dataCard);
-            btnDelete = itemView.findViewById(R.id.btnDelete); // Certifique-se de que esse botão existe no seu XML
+            conteudo = itemView.findViewById(R.id.conteudoCard);  // Campo de conteúdo do sonho
+            btnDelete = itemView.findViewById(R.id.btnDelete);
         }
 
         void bind(final Sonho sonho) {
             titulo.setText(sonho.getTitulo());
             data.setText(sonho.getData());
+            conteudo.setText(sonho.getSonho());  // Preenche o conteúdo com o texto do sonho
 
             itemView.setOnClickListener(v -> listener.onItemClick(sonho));
 
