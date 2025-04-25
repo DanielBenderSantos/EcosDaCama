@@ -98,4 +98,46 @@ public class EcosDaCamaDB extends SQLiteOpenHelper {
         db.delete(TABLE_SONHOS, COLUMN_ID + " = ?", new String[]{String.valueOf(sonhoId)});
         db.close();
     }
+
+    // Método para pesquisar sonhos com base no título ou descrição
+    public List<Sonho> searchSonhos(String query) {
+        List<Sonho> sonhosList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        // Query para buscar sonhos pelo título ou descrição
+        String selection = COLUMN_TITULO + " LIKE ? OR " + COLUMN_SONHO + " LIKE ?";
+        String[] selectionArgs = {"%" + query + "%", "%" + query + "%"};  // "%" para buscar qualquer ocorrência da string
+
+        Cursor cursor = db.query(TABLE_SONHOS, null, selection, selectionArgs, null, null, null);
+
+        if (cursor != null) {
+            // Verifique os índices das colunas
+            int idIndex = cursor.getColumnIndex(COLUMN_ID);
+            int tituloIndex = cursor.getColumnIndex(COLUMN_TITULO);
+            int sonhoIndex = cursor.getColumnIndex(COLUMN_SONHO);
+            int dataIndex = cursor.getColumnIndex(COLUMN_DATA);
+            int horaIndex = cursor.getColumnIndex(COLUMN_HORA);
+
+            while (cursor.moveToNext()) {
+                // Pegando os dados de cada coluna
+                int id = cursor.getInt(idIndex);
+                String titulo = cursor.getString(tituloIndex);
+                String sonho = cursor.getString(sonhoIndex);
+                String data = cursor.getString(dataIndex);
+                String hora = cursor.getString(horaIndex);
+
+                // Criando o objeto Sonho
+                Sonho sonhoObj = new Sonho(titulo, sonho, data, hora);
+                sonhoObj.setId(id);  // Definindo o ID para o objeto
+
+                // Adicionando o sonho à lista
+                sonhosList.add(sonhoObj);
+            }
+            cursor.close();
+        }
+
+        db.close();
+        return sonhosList;
+    }
+
 }

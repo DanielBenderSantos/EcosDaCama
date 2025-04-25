@@ -2,6 +2,7 @@ package devandroid.bender.ecosdacama.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,6 +13,13 @@ import devandroid.bender.ecosdacama.database.EcosDaCamaDB;
 import devandroid.bender.ecosdacama.model.Sonho;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.List;
+import android.net.Uri;
+import android.widget.ImageView;
+
+import com.bumptech.glide.Glide;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+
 public class HomeSonhosActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
@@ -38,6 +46,22 @@ public class HomeSonhosActivity extends AppCompatActivity {
             Intent intent = new Intent(HomeSonhosActivity.this, EcosDaCamaActivity.class);
             startActivity(intent);
         });
+
+        // Pegue a conta do usuário
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        if (account != null) {
+            Uri photoUri = account.getPhotoUrl();  // <- Aqui está a imagem de perfil
+
+            if (photoUri != null) {
+                ImageView imageProfile = findViewById(R.id.imageProfile);
+
+                Glide.with(this)
+                        .load(photoUri)
+                        .circleCrop() // deixa redondinha
+                        .placeholder(R.drawable.cama) // imagem padrão enquanto carrega
+                        .into(imageProfile);
+            }
+        }
     }
 
     @Override

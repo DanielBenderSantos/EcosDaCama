@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".view.EcosDaCamaActivity">
+    tools:context=".view.EcosDaCamaActivity"
+    android:background="@drawable/fundo2"
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,37 +18,42 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="16dp">
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp"
+            android:weightSum="2">
+
+            <!-- Seletor de Data -->
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Data"
+                android:textSize="18sp"
+                android:textColor="#000"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/rounded_background"
+                android:padding="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="8dp"/>
 
             <!-- Seletor de Hora -->
             <TextView
                 android:id="@+id/tvTime"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="Hora"
-                android:textSize="24sp"
+                android:textSize="18sp"
                 android:textColor="#000"
                 android:background="@drawable/rounded_background"
                 android:padding="12dp"
                 android:clickable="true"
                 android:focusable="true" />
 
-            <!-- Seletor de Data -->
-            <TextView
-                android:id="@+id/tvDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Data"
-                android:textSize="18sp"
-                android:textColor="#666"
-                android:layout_marginTop="4dp"
-                android:background="@drawable/rounded_background"
-                android:padding="12dp"
-                android:clickable="true"
-                android:focusable="true" />
-
         </LinearLayout>
+
 
         <!-- Divisor -->
         <View
@@ -61,7 +68,8 @@
             android:layout_height="wrap_content"
             android:text="Título"
             android:textSize="20sp"
-            android:textColor="#555"
+            android:textColor="#FFF"
+
             android:layout_marginTop="16dp" />
 
         <EditText
@@ -69,8 +77,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Título do seu sonho aqui"
+            android:textColorHint="#222222"
             android:textSize="16sp"
-            android:textColor="#333"
+            android:textColor="#222222"
             android:layout_marginTop="8dp"
             android:background="@drawable/rounded_background"
             android:padding="12dp" />
@@ -81,7 +90,7 @@
             android:layout_height="wrap_content"
             android:text="História"
             android:textSize="20sp"
-            android:textColor="#555"
+            android:textColor="#FFF"
             android:layout_marginTop="24dp" />
 
         <ImageButton
@@ -99,9 +108,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Descrição do sonho"
+            android:textColorHint="#222222"
             android:background="@drawable/rounded_background"
             android:padding="12dp"
-            android:textColor="#333"
+            android:textColor="#222222"
             android:layout_marginTop="8dp"
             />
 
