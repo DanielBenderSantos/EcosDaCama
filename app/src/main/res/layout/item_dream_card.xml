@@ -25,16 +25,8 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/dataCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Data do Sonho"
-            android:textColor="#777777"
-            android:textSize="14sp" />
-
         <!-- ImageButton para deletar -->
+
         <ImageButton
             android:id="@+id/btnDelete"
             android:layout_width="wrap_content"
@@ -44,6 +36,15 @@
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="Excluir sonho"
             android:src="@android:drawable/ic_menu_delete" />
+
+        <TextView
+            android:id="@+id/dataCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Data do Sonho"
+            android:textColor="#777777"
+            android:textSize="14sp" />
 
     </LinearLayout>
 
