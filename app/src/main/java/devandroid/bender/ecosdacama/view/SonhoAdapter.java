@@ -38,23 +38,6 @@ public class SonhoAdapter extends RecyclerView.Adapter<SonhoAdapter.SonhoViewHol
     public void onBindViewHolder(@NonNull SonhoViewHolder holder, int position) {
         Sonho sonho = sonhos.get(position);
         holder.bind(sonho);
-
-        // Ao clicar no botão de excluir, exibe o AlertDialog de confirmação
-        holder.btnDelete.setOnClickListener(v -> {
-            new AlertDialog.Builder(holder.itemView.getContext())
-                    .setTitle("Excluir sonho")
-                    .setMessage("Você tem certeza que deseja excluir este sonho?")
-                    .setPositiveButton("Sim", (dialog, which) -> {
-                        // Código para deletar o sonho
-                        dbHelper.deleteSonho(sonho.getId());
-                        // Atualiza a lista de sonhos
-                        sonhos.remove(position);
-                        notifyItemRemoved(position);
-                        Toast.makeText(holder.itemView.getContext(), "Sonho excluído!", Toast.LENGTH_SHORT).show();
-                    })
-                    .setNegativeButton("Não", null)
-                    .show();
-        });
     }
 
     @Override
@@ -79,8 +62,26 @@ public class SonhoAdapter extends RecyclerView.Adapter<SonhoAdapter.SonhoViewHol
 
             itemView.setOnClickListener(v -> listener.onItemClick(sonho));
 
-            // Ao clicar no botão de excluir, chamamos o método de exclusão
-            btnDelete.setOnClickListener(v -> listener.onDeleteSonho(sonho));
+            // Ao clicar no botão de excluir, exibe o AlertDialog de confirmação
+            btnDelete.setOnClickListener(v -> {
+                new AlertDialog.Builder(itemView.getContext())
+                        .setTitle("Excluir sonho")
+                        .setMessage("Você tem certeza que deseja excluir este sonho?")
+                        .setPositiveButton("Sim", (dialog, which) -> {
+                            // Código para deletar o sonho
+                            dbHelper.deleteSonho(sonho.getId());
+
+                            // Atualiza a lista de sonhos após a exclusão
+                            int position = getAdapterPosition();
+                            if (position != RecyclerView.NO_POSITION) {
+                                sonhos.remove(position);
+                                notifyItemRemoved(position);
+                            }
+                            Toast.makeText(itemView.getContext(), "Sonho excluído!", Toast.LENGTH_SHORT).show();
+                        })
+                        .setNegativeButton("Não", null)
+                        .show();
+            });
         }
     }
 
@@ -88,5 +89,10 @@ public class SonhoAdapter extends RecyclerView.Adapter<SonhoAdapter.SonhoViewHol
     public interface OnItemClickListener {
         void onItemClick(Sonho sonho);
         void onDeleteSonho(Sonho sonho);
+    }
+
+    public void updateList(List<Sonho> novosSonhos) {
+        this.sonhos = novosSonhos;
+        notifyDataSetChanged();  // Notifica o RecyclerView para atualizar a exibição
     }
 }
