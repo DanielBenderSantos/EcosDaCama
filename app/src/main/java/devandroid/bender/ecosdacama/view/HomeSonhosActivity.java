@@ -5,8 +5,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -32,63 +30,63 @@ public class HomeSonhosActivity extends AppCompatActivity {
     private SonhoAdapter sonhoAdapter;
     private EcosDaCamaDB dbHelper;
     private FloatingActionButton fabAddSonho;
-    private EditText editTextSearch;  // Campo de pesquisa
+    private EditText editTextSearch;
+    private ImageView imageProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homesonhos_ecosdacama);
 
-        // Inicializa o RecyclerView
+        // Inicializa os componentes
         recyclerView = findViewById(R.id.recyclerViewSonhos);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // Inicializa o banco de dados
         dbHelper = new EcosDaCamaDB(this);
-
-        // Inicializa o botão flutuante para adicionar sonho
         fabAddSonho = findViewById(R.id.fabAddSonho);
+        editTextSearch = findViewById(R.id.editTextSearch);
+        imageProfile = findViewById(R.id.imageProfile);
+
+        // Botão flutuante para adicionar sonho
         fabAddSonho.setOnClickListener(v -> {
-            // Abre a tela para adicionar um novo sonho
             Intent intent = new Intent(HomeSonhosActivity.this, EcosDaCamaActivity.class);
             startActivity(intent);
         });
 
-        // Inicializa o campo de pesquisa
-        editTextSearch = findViewById(R.id.editTextSearch);
-
-        // Adiciona o TextWatcher para o campo de pesquisa
+        // Pesquisa no campo de busca
         editTextSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {
-                // Não é necessário fazer nada aqui
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                searchSonhos(s.toString());
             }
+            @Override public void afterTextChanged(Editable s) { }
+        });
 
-            @Override
-            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
-                // Realiza a pesquisa sempre que o texto mudar
-                String query = charSequence.toString();
-                searchSonhos(query);  // Chama a função de pesquisa
-            }
+        // Clique na imagem de perfil
+        imageProfile.setOnClickListener(v -> {
+            GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(HomeSonhosActivity.this);
 
-            @Override
-            public void afterTextChanged(Editable editable) {
-                // Não é necessário fazer nada aqui
+            if (account != null) {
+                // Se estiver logado, vai para a tela de perfil
+                Intent intent = new Intent(HomeSonhosActivity.this, PerfilActivity.class);
+                startActivity(intent);
+            } else {
+                // Se não estiver logado, volta para a tela de login
+                Intent intent = new Intent(HomeSonhosActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
             }
         });
 
-        // Pegue a conta do usuário
+        // Carrega a foto do perfil se estiver logado
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         if (account != null) {
-            Uri photoUri = account.getPhotoUrl();  // <- Aqui está a imagem de perfil
-
+            Uri photoUri = account.getPhotoUrl();
             if (photoUri != null) {
-                ImageView imageProfile = findViewById(R.id.imageProfile);
-
                 Glide.with(this)
                         .load(photoUri)
-                        .circleCrop() // Deixa redondinha
-                        .placeholder(R.drawable.cama) // Imagem padrão enquanto carrega
+                        .circleCrop()
+                        .placeholder(R.drawable.cama)
                         .into(imageProfile);
             }
         }
@@ -97,14 +95,13 @@ public class HomeSonhosActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadSonhosFromDatabase(); // Atualiza a lista de sonhos sempre que a activity for retomada
+        loadSonhosFromDatabase();
         editTextSearch.setText("");
     }
 
-    // Método para realizar a pesquisa
     private void searchSonhos(String query) {
-        List<Sonho> filteredSonhos = dbHelper.searchSonhos(query);  // Pesquisa no banco de dados
-        sonhoAdapter.updateList(filteredSonhos);  // Atualiza a lista no adapter
+        List<Sonho> filteredSonhos = dbHelper.searchSonhos(query);
+        sonhoAdapter.updateList(filteredSonhos);
     }
 
     private void loadSonhosFromDatabase() {
@@ -114,11 +111,9 @@ public class HomeSonhosActivity extends AppCompatActivity {
             Toast.makeText(this, "Nenhum sonho encontrado!", Toast.LENGTH_SHORT).show();
         }
 
-        // Inicializa o adapter e configura o listener
         sonhoAdapter = new SonhoAdapter(sonhos, new SonhoAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Sonho sonho) {
-                // Abre a tela de detalhes do sonho
                 Intent intent = new Intent(HomeSonhosActivity.this, EcosDaCamaActivity.class);
                 intent.putExtra("sonho_id", sonho.getId());
                 intent.putExtra("titulo", sonho.getTitulo());
@@ -130,15 +125,11 @@ public class HomeSonhosActivity extends AppCompatActivity {
 
             @Override
             public void onDeleteSonho(Sonho sonho) {
-                // Excluir o sonho do banco de dados
                 dbHelper.deleteSonho(sonho.getId());
-
-                // Atualiza a lista após a exclusão
                 loadSonhosFromDatabase();
             }
-        }, dbHelper); // Passando o dbHelper para o Adapter
+        }, dbHelper);
 
-        // Configura o adapter no RecyclerView
         recyclerView.setAdapter(sonhoAdapter);
     }
 }

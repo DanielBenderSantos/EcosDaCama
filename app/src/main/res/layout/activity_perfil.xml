@@ -9,17 +9,8 @@
     >
 
     <Button
-        android:id="@+id/btnLogin"
+        android:id="@+id/btnLogout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Login com Google"
-        android:layout_margin="20dp"/>
-
-    <Button
-        android:id="@+id/btnLoginSemConta"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Entrar sem Login"
-        android:layout_margin="20dp"/>
-
+        android:text="Deslogar" />
 </LinearLayout>
