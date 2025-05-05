@@ -1,7 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const fetch = require('node-fetch'); // <-- IMPORTANTE
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
 
 const app = express();
 const port = process.env.PORT || 3000;
