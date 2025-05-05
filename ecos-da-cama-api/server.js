@@ -9,8 +9,8 @@ const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-const apiKey = process.env.API_KEY;
-const modelName = process.env.MODEL_NAME;
+const apiKey = process.env.GEMINI_API_KEY;
+const modelName = process.env.GEMINI_MODEL;
 
 app.post('/api/interpretar-sonho', async (req, res) => {
     const { sonho } = req.body;
