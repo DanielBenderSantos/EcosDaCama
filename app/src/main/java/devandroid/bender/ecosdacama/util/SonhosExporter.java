@@ -23,9 +23,18 @@ public class SonhosExporter {
         try (FileWriter writer = new FileWriter(file)) {
             for (Sonho sonho : sonhos) {
                 writer.write("Título: " + sonho.getTitulo() + "\n");
-                writer.write("Sonho: " + sonho.getSonho() + "\n");
+                writer.write("Sonho: " + sonho.getDescricao() + "\n");
                 writer.write("Data: " + sonho.getData() + "\n");
                 writer.write("Hora: " + sonho.getHora() + "\n");
+
+                // Adicionando o campo significado, se disponível
+                String significado = sonho.getSignificado();
+                if (significado != null && !significado.trim().isEmpty()) {
+                    writer.write("Significado: " + significado + "\n");
+                } else {
+                    writer.write("Significado: (não informado)\n");
+                }
+
                 writer.write("\n------------------\n\n");
             }
             writer.flush();

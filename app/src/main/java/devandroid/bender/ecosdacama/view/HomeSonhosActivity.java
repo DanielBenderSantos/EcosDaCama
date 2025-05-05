@@ -38,7 +38,6 @@ public class HomeSonhosActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homesonhos_ecosdacama);
 
-        // Inicializa os componentes
         recyclerView = findViewById(R.id.recyclerViewSonhos);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         dbHelper = new EcosDaCamaDB(this);
@@ -46,13 +45,11 @@ public class HomeSonhosActivity extends AppCompatActivity {
         editTextSearch = findViewById(R.id.editTextSearch);
         imageProfile = findViewById(R.id.imageProfile);
 
-        // Botão flutuante para adicionar sonho
         fabAddSonho.setOnClickListener(v -> {
             Intent intent = new Intent(HomeSonhosActivity.this, EcosDaCamaActivity.class);
             startActivity(intent);
         });
 
-        // Pesquisa no campo de busca
         editTextSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -61,16 +58,13 @@ public class HomeSonhosActivity extends AppCompatActivity {
             @Override public void afterTextChanged(Editable s) { }
         });
 
-        // Clique na imagem de perfil
         imageProfile.setOnClickListener(v -> {
             GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(HomeSonhosActivity.this);
 
             if (account != null) {
-                // Se estiver logado, vai para a tela de perfil
                 Intent intent = new Intent(HomeSonhosActivity.this, PerfilActivity.class);
                 startActivity(intent);
             } else {
-                // Se não estiver logado, volta para a tela de login
                 Intent intent = new Intent(HomeSonhosActivity.this, LoginActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
@@ -78,7 +72,6 @@ public class HomeSonhosActivity extends AppCompatActivity {
             }
         });
 
-        // Carrega a foto do perfil se estiver logado
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         if (account != null) {
             Uri photoUri = account.getPhotoUrl();
@@ -117,9 +110,10 @@ public class HomeSonhosActivity extends AppCompatActivity {
                 Intent intent = new Intent(HomeSonhosActivity.this, EcosDaCamaActivity.class);
                 intent.putExtra("sonho_id", sonho.getId());
                 intent.putExtra("titulo", sonho.getTitulo());
-                intent.putExtra("descricao", sonho.getSonho());
+                intent.putExtra("descricao", sonho.getDescricao());
                 intent.putExtra("data", sonho.getData());
                 intent.putExtra("hora", sonho.getHora());
+                intent.putExtra("significado", sonho.getSignificado()); // Campo adicionado aqui
                 startActivity(intent);
             }
 

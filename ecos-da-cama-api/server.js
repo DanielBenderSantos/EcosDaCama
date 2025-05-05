@@ -1,3 +1,5 @@
+require('dotenv').config(); // Adicione isso no topo
+
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -6,14 +8,13 @@ const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-// Substitua com a sua chave de API real
-const apiKey = 'AIzaSyB9h_j18wnJMQKUDzWqrXcSxfh6HhSVIJc';
-const modelName = 'gemini-1.5-pro-latest'; // Use o modelo que funcionou no teste direto
+const apiKey = process.env.GEMINI_API_KEY;
+const modelName = process.env.GEMINI_MODEL;
 
-// Endpoint para receber o sonho do aplicativo Android
 app.post('/api/interpretar-sonho', async (req, res) => {
     const { sonho } = req.body;
-    console.log (sonho)
+    console.log(sonho);
+
     if (!sonho) {
         return res.status(400).json({ error: 'O texto do sonho é obrigatório.' });
     }
@@ -38,7 +39,7 @@ app.post('/api/interpretar-sonho', async (req, res) => {
         const data = await response.json();
 
         let significado = 'Não foi possível interpretar o sonho.';
-        if (data && data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
+        if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
             significado = data.candidates[0].content.parts[0].text;
         }
 

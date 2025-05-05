@@ -1,6 +1,5 @@
 package devandroid.bender.ecosdacama.view;
 
-import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,27 +52,23 @@ public class SonhoAdapter extends RecyclerView.Adapter<SonhoAdapter.SonhoViewHol
             super(itemView);
             titulo = itemView.findViewById(R.id.tituloCard);
             data = itemView.findViewById(R.id.dataCard);
-            conteudo = itemView.findViewById(R.id.conteudoCard);  // Campo de conteúdo do sonho
+            conteudo = itemView.findViewById(R.id.conteudoCard);
             btnDelete = itemView.findViewById(R.id.btnDelete);
         }
 
         void bind(final Sonho sonho) {
             titulo.setText(sonho.getTitulo());
             data.setText(sonho.getData());
-            conteudo.setText(sonho.getSonho());  // Preenche o conteúdo com o texto do sonho
+            conteudo.setText(sonho.getDescricao());
 
             itemView.setOnClickListener(v -> listener.onItemClick(sonho));
 
-            // Ao clicar no botão de excluir, exibe o AlertDialog de confirmação
             btnDelete.setOnClickListener(v -> {
                 new AlertDialog.Builder(itemView.getContext())
                         .setTitle("Excluir sonho")
                         .setMessage("Você tem certeza que deseja excluir este sonho?")
                         .setPositiveButton("Sim", (dialog, which) -> {
-                            // Código para deletar o sonho
                             dbHelper.deleteSonho(sonho.getId());
-
-                            // Atualiza a lista de sonhos após a exclusão
                             int position = getAdapterPosition();
                             if (position != RecyclerView.NO_POSITION) {
                                 sonhos.remove(position);
@@ -87,7 +82,6 @@ public class SonhoAdapter extends RecyclerView.Adapter<SonhoAdapter.SonhoViewHol
         }
     }
 
-    // Interface para comunicação entre o adapter e a activity
     public interface OnItemClickListener {
         void onItemClick(Sonho sonho);
         void onDeleteSonho(Sonho sonho);
@@ -95,6 +89,6 @@ public class SonhoAdapter extends RecyclerView.Adapter<SonhoAdapter.SonhoViewHol
 
     public void updateList(List<Sonho> novosSonhos) {
         this.sonhos = novosSonhos;
-        notifyDataSetChanged();  // Notifica o RecyclerView para atualizar a exibição
+        notifyDataSetChanged();
     }
 }
