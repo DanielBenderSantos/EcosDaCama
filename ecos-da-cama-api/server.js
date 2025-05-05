@@ -1,4 +1,4 @@
-require('dotenv').config(); // Adicione isso no topo
+require('dotenv').config();
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -8,20 +8,18 @@ const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-const apiKey = process.env.GEMINI_API_KEY;
-const modelName = process.env.GEMINI_MODEL;
+// Substitua com a sua chave de API do arquivo .env
+const apiKey = process.env.API_KEY;
+const modelName = process.env.MODEL_NAME;
 
 app.post('/api/interpretar-sonho', async (req, res) => {
     const { sonho } = req.body;
-    console.log(sonho);
-
     if (!sonho) {
         return res.status(400).json({ error: 'O texto do sonho é obrigatório.' });
     }
 
     try {
         const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-
         const prompt = `Interprete o significado do seguinte sonho: ${sonho}`;
 
         const response = await fetch(geminiApiUrl, {
@@ -37,17 +35,14 @@ app.post('/api/interpretar-sonho', async (req, res) => {
         });
 
         const data = await response.json();
-
         let significado = 'Não foi possível interpretar o sonho.';
-        if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+        if (data && data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts.length > 0) {
             significado = data.candidates[0].content.parts[0].text;
         }
 
         res.json({ significado });
-
     } catch (error) {
-        console.error('Erro ao comunicar com a API do Gemini:', error);
-        res.status(500).json({ error: 'Erro ao obter o significado do sonho.' });
+        res.status(500).json({ error: 'Erro ao comunicar com a API do Gemini.' });
     }
 });
 
