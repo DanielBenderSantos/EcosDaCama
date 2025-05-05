@@ -23,7 +23,7 @@ app.post('/api/interpretar-sonho', async (req, res) => {
         console.log("Sonho recebido:", sonho);
 
         const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-        const prompt = `Interprete o significado do seguinte sonho: ${sonho}`;
+        const prompt = `Analise o seguinte sonho e me diga seu possível significado com base em interpretações comuns da simbologia dos sonhos. Seja objetivo e considere aspectos psicológicos e simbólicos tradicionais. sonho: ${sonho}`;
 
         const response = await fetch(geminiApiUrl, {
             method: 'POST',
