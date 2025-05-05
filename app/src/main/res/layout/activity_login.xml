@@ -5,7 +5,7 @@
     android:gravity="center"
     android:orientation="vertical"
     android:padding="24dp"
-    android:background="@drawable/fundo2"
+    android:background="@drawable/fundolu"
     >
 
     <Button

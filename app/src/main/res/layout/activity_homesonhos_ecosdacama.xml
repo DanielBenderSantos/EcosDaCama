@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/fundo2"
+    android:background="@drawable/fundolu"
     >
 
     <!-- Barra superior com campo de pesquisa, botão de lupa e foto do usuário -->
