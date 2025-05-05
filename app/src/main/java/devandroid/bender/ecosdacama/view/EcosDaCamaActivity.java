@@ -204,6 +204,8 @@ public class EcosDaCamaActivity extends AppCompatActivity {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("sonho", textoDoSonho);
+            jsonObject.put("prompt", "Interprete esse sonho com base na Bíblia. Considere versículos e significados espirituais cristãos.");
+
         } catch (JSONException e) {
             Log.e("EcosDaCama", "Erro ao criar requisição JSON", e);
             runOnUiThread(() -> tvSignificado.setText("Erro ao criar requisição."));
