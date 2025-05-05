@@ -51,7 +51,7 @@ public class EcosDaCamaActivity extends AppCompatActivity {
     private int sonhoId = -1;
     private String significadoDoSonho = "";
 
-    private static final String API_URL = "http://192.168.1.79:3000/api/interpretar-sonho";
+    private static final String API_URL = "https://ecos-da-cama.vercel.app/api/interpretar-sonho";
 
     private final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
