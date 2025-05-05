@@ -12,6 +12,7 @@ app.use(bodyParser.json());
 const apiKey = process.env.GEMINI_API_KEY;
 const modelName = process.env.GEMINI_MODEL;
 
+
 app.post('/api/interpretar-sonho', async (req, res) => {
     const { sonho } = req.body;
     if (!sonho) {
