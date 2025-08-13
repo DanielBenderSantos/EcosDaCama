@@ -1,0 +1,21 @@
+diff --git a/node_modules/expo-router/build/views/Navigator.js b/node_modules/expo-router/build/views/Navigator.js
+index 3f27602..70d1212 100644
+--- a/node_modules/expo-router/build/views/Navigator.js
++++ b/node_modules/expo-router/build/views/Navigator.js
+@@ -149,10 +149,14 @@ const SlotNavigatorWrapper = process.env.EXPO_OS === 'android' && (0, react_nati
+  * The default navigator for the app when no root _layout is provided.
+  */
+ function DefaultNavigator() {
+-    return (<SlotNavigatorWrapper style={{ flex: 1 }}>
++  const isIOS = process.env.EXPO_OS === 'ios';
++  return (
++    <SlotNavigatorWrapper {...(isIOS ? { style: { flex: 1 } } : {})}>
+       <SlotNavigator />
+-    </SlotNavigatorWrapper>);
++    </SlotNavigatorWrapper>
++  );
+ }
++    
+ Navigator.Slot = NavigatorSlot;
+ Navigator.useContext = useNavigatorContext;
+ /** Used to configure route settings. */
