@@ -4,6 +4,8 @@ import {router} from "expo-router"
 
 import {Button} from "@/components/button"
 import {Input} from "@/components/input"
+import {styles} from "../styles"
+
 
 
 export default function Index(){
@@ -12,24 +14,21 @@ export default function Index(){
         router.navigate("/dashboard")
     }
 
-    return(
-        <View  style={style.container}>
-            <Text  style={style.title} >Ola,{name}</Text>
-            <Input onChangeText={setName}/>
-            <Button title="Continuar" onPress={handleNext}/>
+    return(        
+        <View  style={styles.myContainer}>
+            <View  style={styles.myBody}>
+                <Text  style={style.title} >Ola,{name}</Text>
+                <Input onChangeText={setName}/>
+                <Button title="Continuar" onPress={handleNext}/>
+            </View>
         </View>
     )
 }
 
 const style = StyleSheet.create({
-    container:{
-        flex:1,
-        padding:36,
-        justifyContent:"center",
-        gap:16,
-    },
+    
     title:{
-        color:"gray",
         fontSize:24,
+        color:"#121214",
     },
 })

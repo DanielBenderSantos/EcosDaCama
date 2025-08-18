@@ -3,11 +3,15 @@ import {router} from "expo-router"
 
 
 import {Button} from "@/components/button"
+import {styles} from "../styles"
+
 export default function Dashboard(){
     return(
-        <View style={style.container}>
-            <Text style={style.title}>Dashboard</Text>
-            <Button  title="Voltar" onPress={() => router.back()}/>
+        <View  style={styles.myContainer}>
+            <View  style={styles.myBody}>
+                <Text style={style.title}>Dashboard</Text>
+                <Button  title="Voltar" onPress={() => router.back()}/>
+            </View>
         </View>
     )
 }
