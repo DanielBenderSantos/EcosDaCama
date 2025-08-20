@@ -1,13 +1,16 @@
 import {View,Text,ScrollView, StyleSheet,Dimensions} from "react-native"
+import{useState} from "react"
 import {router} from "expo-router"
 import {FontAwesome } from "@expo/vector-icons";
 import {SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient"; // se estiver usando expo
 
-import {Input} from "@/components/input"
+
+import CamposDataHora from "@/components/camposDataHora";
 
 export default function Dashboard(){
+     const [when, setWhen] = useState<Date>(new Date()); // controlado (opcional)
      function handleBack(){
         router.navigate("/")
     }
@@ -25,6 +28,16 @@ export default function Dashboard(){
                             <Text style={{fontSize:32,textAlign:"center"}}>Novo Sonho</Text>
 
                             <View>
+                                <View style={{ padding: 16 }}>
+                                    <CamposDataHora
+                                        value={when}                 // pode omitir se quiser não-controlado
+                                        onChange={setWhen}
+                                        labelDate="Data"
+                                        labelTime="Hora"
+                                        is24Hour
+                                        // minimumDate={new Date()}  // exemplo: bloquear passado
+                                    />
+                                </View>
                             </View>
                         </View>
                     </View>
