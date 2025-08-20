@@ -1,20 +1,16 @@
-import {useState} from "react"
-import {View,Text,TextInput,ScrollView, StyleSheet,Dimensions} from "react-native"
+import {View,Text,ScrollView, StyleSheet,Dimensions} from "react-native"
 import {router} from "expo-router"
 import {FontAwesome } from "@expo/vector-icons";
 import {SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient"; // se estiver usando expo
 
-import {Button} from "@/components/button"
 import {Input} from "@/components/input"
 
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 export default function Index(){
-    const [name, setName] = useState("")
     function handleNext(){
-        alert()
         router.navigate("/dashboard")
     }
 
@@ -32,32 +28,51 @@ export default function Index(){
                             </View>
                             <ScrollView style={{gap:12 , }} contentContainerStyle={{ padding: 12 }} showsVerticalScrollIndicator={true} >
                                 <View  style={{gap:12}}>
-                                    
                                     <View style={style.card}>
-                                        <Text>ola</Text>
-                                        <Text>02/02/2025</Text>
-                                        <Text  style={style.textArea }   numberOfLines={4} ellipsizeMode="tail">
+                                        <View style={{flexDirection:"row",justifyContent:"space-between",alignItems:"center"}}>
+                                            <View>
+                                                <Text>ola</Text>
+                                                <Text>02/02/2025</Text>
+                                            </View>
+                                            <FontAwesome name="trash" size={32} color="black"/>
+                                        </View>
+                                        <Text  style={style.conteudoCard }   numberOfLines={4} ellipsizeMode="tail">
                                             Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
                                         </Text>
                                     </View>
                                     <View style={style.card}>
-                                        <Text>ola</Text>
-                                        <Text>02/02/2025</Text>
-                                        <Text  style={style.textArea}  numberOfLines={4} ellipsizeMode="tail">
+                                        <View style={{flexDirection:"row",justifyContent:"space-between",alignItems:"center"}}>
+                                            <View>
+                                                <Text>ola</Text>
+                                                <Text>02/02/2025</Text>
+                                            </View>
+                                            <FontAwesome name="trash" size={32} color="black"/>
+                                        </View>
+                                        <Text  style={style.conteudoCard }   numberOfLines={4} ellipsizeMode="tail">
                                             Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
                                         </Text>
                                     </View>
                                     <View style={style.card}>
-                                        <Text>ola</Text>
-                                        <Text>02/02/2025</Text>
-                                        <Text  style={style.textArea}  numberOfLines={4} ellipsizeMode="tail">
+                                        <View style={{flexDirection:"row",justifyContent:"space-between",alignItems:"center"}}>
+                                            <View>
+                                                <Text>ola</Text>
+                                                <Text>02/02/2025</Text>
+                                            </View>
+                                            <FontAwesome name="trash" size={32} color="black"/>
+                                        </View>
+                                        <Text  style={style.conteudoCard }   numberOfLines={4} ellipsizeMode="tail">
                                             Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
                                         </Text>
                                     </View>
                                     <View style={style.card}>
-                                        <Text>ola</Text>
-                                        <Text>02/02/2025</Text>
-                                        <Text  style={style.textArea}  numberOfLines={4} ellipsizeMode="tail">
+                                        <View style={{flexDirection:"row",justifyContent:"space-between",alignItems:"center"}}>
+                                            <View>
+                                                <Text>ola</Text>
+                                                <Text>02/02/2025</Text>
+                                            </View>
+                                            <FontAwesome name="trash" size={32} color="black"/>
+                                        </View>
+                                        <Text  style={style.conteudoCard }   numberOfLines={4} ellipsizeMode="tail">
                                             Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
                                         </Text>
                                     </View>
@@ -86,7 +101,7 @@ export const style = StyleSheet.create({
         shadowRadius: 3.84,
         gap:15,               //espaçamento entre os filhos
     },
-    textArea:{
+    conteudoCard:{
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
