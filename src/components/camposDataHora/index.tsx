@@ -17,8 +17,8 @@ type Props = {
 export default function CamposDataHora({
   value,
   onChange,
-  labelDate = "Data",
-  labelTime = "Hora",
+  labelDate = "Data ",
+  labelTime = "Hora ",
   is24Hour = true,
   minimumDate,
   maximumDate,
@@ -167,12 +167,12 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
   },
-  label: { fontSize: 12, color: "#2c3e50", marginBottom: 4 },
-  value: { fontSize: 16, fontWeight: "600", color: "#2c3e50" },
+  label: { fontSize: 12, color: "#2c3e50", marginBottom: 2 },
+  value: { fontSize: 13, fontWeight: "600", color: "#2c3e50" },
 
   // Web
   webInput: {
-    width: "90%",
+    width: "70%",
     padding: 10,
     borderRadius: 8,
     outline: "none",
