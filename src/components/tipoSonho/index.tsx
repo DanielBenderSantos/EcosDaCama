@@ -1,6 +1,6 @@
 // components/TipoSonhoCheckbox.tsx
 import React from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import Checkbox from "expo-checkbox";
 
 export type TipoSonhoId = "normal" | "lucido" | "pesadelo" | "recorrente";
@@ -24,26 +24,26 @@ export default function TipoSonhoCheckbox({
   title = "Tipo de sonho",
 }: Props) {
   const toggle = (id: TipoSonhoId, nextChecked: boolean) => {
-    onChange(nextChecked ? id : null); // marca = id, desmarca = null
+    onChange(nextChecked ? id : null);
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
 
-      <FlatList
-        data={OPCOES}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={{ justifyContent: "space-between" }}
-        contentContainerStyle={{ paddingTop: 4 }}
-        renderItem={({ item }) => {
+      {/* grade 2 colunas sem FlatList */}
+      <View style={styles.grid}>
+        {OPCOES.map((item) => {
           const checked = value === item.id;
           return (
             <TouchableOpacity
+              key={item.id}
               activeOpacity={0.8}
               style={styles.item}
               onPress={() => toggle(item.id, !checked)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked }}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
             >
               <Checkbox
                 value={checked}
@@ -53,8 +53,8 @@ export default function TipoSonhoCheckbox({
               <Text style={styles.label}>{item.label}</Text>
             </TouchableOpacity>
           );
-        }}
-      />
+        })}
+      </View>
     </View>
   );
 }
@@ -63,13 +63,19 @@ const styles = StyleSheet.create({
   container: { paddingVertical: 8 },
   title: { fontSize: 16, fontWeight: "600", marginBottom: 8 },
 
-  // 2 colunas estáveis (Android/Web)
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+
+  // 2 colunas estáveis
   item: {
-   flexDirection: "row",
+    flexDirection: "row",
     alignItems: "center",
-    width: "48%",      // 2 colunas (quase metade da linha)
-    marginBottom: 12,  // espaço vertical
-},
+    width: "48%",
+    marginBottom: 12,
+  },
 
   label: { marginLeft: 6, fontSize: 15, color: "#2c3e50" },
 });

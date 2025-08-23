@@ -58,30 +58,33 @@ export default function Dashboard(){
                                 <FontAwesome  onPress={handleBack}  name="arrow-left" size={32} color="black"/>                                
                                 <FontAwesome name="user-circle" size={32} color="black"/>                              
                             </View>
+                            <ScrollView style={{gap:12 , }} contentContainerStyle={{ padding: 12 }} showsVerticalScrollIndicator={true} >
                             
-                            <Text style={{fontSize:32,textAlign:"center"}}>Novo Sonho</Text>
+                                <Text style={{fontSize:32,textAlign:"center"}}>Novo Sonho</Text>
 
-                            <View>
-                                <View style={{ gap:12 }}>
-                                    <CamposDataHora value={when} onChange={setWhen} labelDate="Data " labelTime="Hora " is24Hour/>
-                                    <Input placeholder="Titulo"/>
+                                <View>
+                                    <View style={{ gap:12 }}>
+                                        <CamposDataHora value={when} onChange={setWhen} labelDate="Data " labelTime="Hora " is24Hour/>
+                                        <Input placeholder="Titulo"/>
 
-                                    {/* Textarea Sonho */}
-                                    <TextInput
-                                        placeholder="Descreva seu sonho..."
-                                        value={textoSonho}
-                                        onChangeText={setTextoSonho}
-                                        multiline
-                                        numberOfLines={6}
-                                        textAlignVertical="top"
-                                        style={style.textarea}
-                                    />
+                                        {/* Textarea Sonho */}
+                                        <TextInput
+                                            placeholder="Descreva seu sonho..."
+                                            value={textoSonho}
+                                            onChangeText={setTextoSonho}
+                                            multiline
+                                            numberOfLines={6}
+                                            textAlignVertical="top"
+                                            style={style.textarea}
+                                        />
 
-                                    <SentimentosCheckbox value={sentimentos} onChange={setSentimentos} />
-                                    <TipoSonhoCheckbox value={tipo} onChange={setTipo} />
-                                    <Button title="Salvar" onPress={salvar} />
+                                        <SentimentosCheckbox value={sentimentos} onChange={setSentimentos} />
+                                        <TipoSonhoCheckbox value={tipo} onChange={setTipo} />
+                                        <Button title="Salvar" onPress={salvar} />
+                                    </View>
                                 </View>
-                            </View>
+                            </ScrollView>
+
                         </View>
                     </View>
                 </LinearGradient>
