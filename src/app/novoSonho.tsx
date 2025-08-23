@@ -9,7 +9,6 @@ import { LinearGradient } from "expo-linear-gradient"; // se estiver usando expo
 import CamposDataHora from "@/components/camposDataHora";
 import TipoSonhoCheckbox, { TipoSonhoId } from "@/components/tipoSonho";
 import {Button} from "@/components/button"
-import {Input} from "@/components/input"
 import SentimentosCheckbox from "@/components/sentimentosCheckbox";
 
 export default function Dashboard(){
@@ -27,6 +26,7 @@ export default function Dashboard(){
     });
 
     const [textoSonho, setTextoSonho] = useState("");
+    const [textoTitulo, setTextoTitulo] = useState("");
 
     function handleBack(){
         router.navigate("/")
@@ -37,7 +37,7 @@ export default function Dashboard(){
           .filter((k) => sentimentos[k as keyof typeof sentimentos])
           .join(", ");
         
-        const msg = `Sonho: ${textoSonho}\nSentimentos: ${selecionados || "nenhum"}`;
+        const msg = `Titulo:${textoTitulo}\n Sonho: ${textoSonho}\n Sentimentos: ${selecionados || "nenhum"} \n tipo: ${tipo}`;
 
         if (Platform.OS === "web") {
             window.alert(`Sonho salvo\n${msg}`);
@@ -54,18 +54,18 @@ export default function Dashboard(){
                 <LinearGradient  colors={["#7c74c4ff", "#f0c1b4ff"]} style={{ flex: 1 ,justifyContent:"center"}} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
                     <View style={{alignItems:"center",justifyContent:"center"}}>  
                         <View style={[style.card, {backgroundColor:"rgba(255, 255, 255, 0.57)", minHeight:Dimensions.get("window").height * 0.95, maxHeight:Dimensions.get("window").height * 0.95, width:"90%"}]}>
-                            <View style={{flexDirection:"row",justifyContent:"space-between",alignItems:"center"}} >
+                            <View style={{flexDirection:"row",justifyContent:"space-between",alignItems:"center", height:42, }} >
                                 <FontAwesome  onPress={handleBack}  name="arrow-left" size={32} color="black"/>                                
                                 <FontAwesome name="user-circle" size={32} color="black"/>                              
                             </View>
                             <ScrollView style={{gap:12 , }} contentContainerStyle={{ padding: 12 }} showsVerticalScrollIndicator={true} >
                             
-                                <Text style={{fontSize:32,textAlign:"center"}}>Novo Sonho</Text>
+                                <Text style={{fontSize:32,textAlign:"center", marginBottom:32}}>Novo Sonho</Text>
 
                                 <View>
                                     <View style={{ gap:12 }}>
                                         <CamposDataHora value={when} onChange={setWhen} labelDate="Data " labelTime="Hora " is24Hour/>
-                                        <Input placeholder="Titulo"/>
+                                        <TextInput placeholder="Titulo" style={style.pesquisa} value={textoTitulo} onChangeText={setTextoTitulo}/>
 
                                         {/* Textarea Sonho */}
                                         <TextInput
@@ -76,6 +76,7 @@ export default function Dashboard(){
                                             numberOfLines={6}
                                             textAlignVertical="top"
                                             style={style.textarea}
+                                            
                                         />
 
                                         <SentimentosCheckbox value={sentimentos} onChange={setSentimentos} />
@@ -111,6 +112,13 @@ export const style = StyleSheet.create({
         padding: 10,
         minHeight: 100,
         fontSize: 16,
+        backgroundColor: "#fff"
+    },
+    pesquisa:{
+        borderWidth: 1,
+        borderColor: "#ccc",
+        borderRadius: 8,
+        padding: 10,     fontSize: 16,
         backgroundColor: "#fff"
     }
 })
