@@ -6,7 +6,10 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "moduleResolution": "bundler",
+    "moduleSuffixes": [".web", ".native", ""],
+    "skipLibCheck": true
   },
   "include": [
     "**/*.ts",
