@@ -18,7 +18,7 @@ import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "@react-navigation/native";
 
-// ⬇️ Ajuste o caminho conforme onde você salvou o arquivo do DB
+// ⬇️ caminho onde está o arquivo do DB
 import { initDB, listSonhos, deleteSonho, type Sonho } from "@/db";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -75,31 +75,29 @@ export default function Index() {
     });
   }, [query, sonhos]);
 
-    const confirmDelete = async (id?: number) => {
-        if (!id) return;
+  const confirmDelete = async (id?: number) => {
+    if (!id) return;
 
-        if (Platform.OS === "web") {
-            // Web: usa confirm nativo do navegador
-            const ok = window.confirm("Deseja realmente excluir este sonho?");
-            if (!ok) return;
-            await deleteSonho(id);
-            await load();
-            return;
-        }
+    if (Platform.OS === "web") {
+      const ok = window.confirm("Deseja realmente excluir este sonho?");
+      if (!ok) return;
+      await deleteSonho(id);
+      await load();
+      return;
+    }
 
-        // Mobile: mantém Alert com 2 botões
-        Alert.alert("Excluir sonho", "Deseja realmente excluir este sonho?", [
-            { text: "Cancelar", style: "cancel" },
-            {
-            text: "Excluir",
-            style: "destructive",
-            onPress: async () => {
-                await deleteSonho(id);
-                await load();
-            },
-            },
-        ]);
-    };
+    Alert.alert("Excluir sonho", "Deseja realmente excluir este sonho?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Excluir",
+        style: "destructive",
+        onPress: async () => {
+          await deleteSonho(id);
+          await load();
+        },
+      },
+    ]);
+  };
 
   const openEdit = (id?: number) => {
     if (!id) return;
@@ -153,19 +151,16 @@ export default function Index() {
                   filtered.map((s) => (
                     <Pressable
                       key={s.id}
-                      // Toque curto → editar (web e mobile)
-                      onPress={() => openEdit(s.id)}
-                      // Long press (mais útil no mobile)
-                      onLongPress={() => confirmDelete(s.id)}
+                      onPress={() => openEdit(s.id)}            // toque curto → editar
+                      onLongPress={() => confirmDelete(s.id)}    // long press → excluir (mobile)
                       delayLongPress={400}
                       accessibilityRole="button"
-                      // Melhor UX no web
                       style={({ pressed }) => [
                         styles.sonhoCard,
-                        Platform.OS === "web" && { cursor: "pointer" as any },
+                        Platform.OS === "web" && ({ cursor: "pointer" } as any),
                         pressed && { opacity: 0.9 },
                       ]}
-                      // Clique direito (web) → excluir
+                      // clique direito (web) → excluir
                       {...(Platform.OS === "web"
                         ? {
                             onContextMenu: (e: any) => {
@@ -175,37 +170,15 @@ export default function Index() {
                           }
                         : {})}
                     >
-                      <View style={styles.cardTopRow}>
-                        <Text style={styles.sonhoTitulo}>{s.titulo || "Sem título"}</Text>
+                      {/* Título */}
+                      <Text style={styles.sonhoTitulo}>{s.titulo || "Sem título"}</Text>
 
-                        {/* Lixeira — funciona em web e mobile */}
-                        <Pressable
-                          onPress={(e: any) => {
-                            // evita que o clique na lixeira dispare o onPress do card
-                            e.stopPropagation?.();
-                            confirmDelete(s.id);
-                          }}
-                          accessibilityLabel="Excluir sonho"
-                          style={({ pressed }) => [styles.trashBtn, pressed && { opacity: 0.7 }]}
-                          // Suporte a clique direito direto na lixeira (web)
-                          {...(Platform.OS === "web"
-                            ? {
-                                onContextMenu: (e: any) => {
-                                  e.preventDefault();
-                                  e.stopPropagation?.();
-                                  confirmDelete(s.id);
-                                },
-                              }
-                            : {})}
-                        >
-                          <FontAwesome name="trash" size={20} color="red" />
-                        </Pressable>
-                      </View>
-
+                      {/* Trecho */}
                       <Text style={styles.sonhoTrecho} numberOfLines={3}>
                         {s.sonho}
                       </Text>
 
+                      {/* Metadados */}
                       <View style={{ gap: 4 }}>
                         <Text style={styles.meta}>
                           Tipo: <Text style={styles.metaStrong}>{s.tipo}</Text>
@@ -267,22 +240,10 @@ const styles = StyleSheet.create({
     gap: 8,
     ...(Platform.OS === "web" ? ({ userSelect: "none" } as any) : null),
   },
-  cardTopRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 8,
-  },
-  trashBtn: {
-    padding: 6,
-    ...(Platform.OS === "web" ? ({ cursor: "pointer" } as any) : null),
-  },
   sonhoTitulo: {
-    flex: 1,
     fontSize: 16,
     fontWeight: "700",
     color: "#2c3e50",
-    paddingRight: 8,
   },
   sonhoTrecho: {
     fontSize: 14,
