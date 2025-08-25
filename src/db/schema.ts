@@ -2,19 +2,19 @@
 
 export const DB_NAME = "EcosDaCama";
 
-// Tabela principal solicitada
+// Tabela principal (agora com when_at)
 export const CREATE_SONHOS_TABLE = `
 CREATE TABLE IF NOT EXISTS Sonhos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   titulo TEXT NOT NULL,
   sonho TEXT NOT NULL,
   sentimentos TEXT NOT NULL, -- JSON string: ["feliz","triste",...]
-  tipo TEXT NOT NULL         -- ex.: "normal", "lúcido", "pesadelo", "recorrente"
+  tipo TEXT NOT NULL,        -- ex.: "normal", "lúcido", "pesadelo", "recorrente"
+  when_at TEXT               -- ISO string (Date.toISOString())
 );
 `;
 
-// Se quiser evoluir depois, crie novas migrações incrementais aqui.
-// Exemplo de controle simples de versão (opcional):
+// Meta (controle de versão simples - pode continuar igual)
 export const CREATE_META = `
 CREATE TABLE IF NOT EXISTS _meta (
   key TEXT PRIMARY KEY,
