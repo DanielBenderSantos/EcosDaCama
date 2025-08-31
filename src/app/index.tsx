@@ -30,6 +30,7 @@ export default function Index() {
   const [query, setQuery] = useState("");
 
   const handleNext = () => router.navigate("/novoSonho");
+  const goProfile = () => router.navigate("/perfil");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -134,7 +135,13 @@ export default function Index() {
                   onChangeText={setQuery}
                   style={styles.pesquisa}
                 />
-                <FontAwesome name="user-circle" size={32} color="black" />
+                <Pressable
+                  onPress={goProfile}
+                  style={({ pressed }) => [pressed && { opacity: 0.7 }]}
+                  accessibilityRole="button"
+                >
+                  <FontAwesome name="user-circle" size={32} color="black" />
+                </Pressable>
               </View>
 
               {/* ====== LISTAGEM ====== */}

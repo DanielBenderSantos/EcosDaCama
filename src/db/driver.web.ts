@@ -23,7 +23,7 @@ function candidates(): string[] {
   return [
     // 1) local (pasta public) — recomendado
     `${origin}/sql-wasm.wasm`,
-    // 2) fallback: CDN oficial do sql.js (funciona para dev)
+    // 2) fallback: CDN oficial do sql.js
     "https://sql.js.org/dist/sql-wasm.wasm",
   ];
 }
@@ -34,13 +34,11 @@ async function findAvailableWasm(): Promise<string> {
     try {
       const res = await fetch(url, { method: "HEAD", cache: "no-store" });
       if (res.ok) return url;
-    } catch {
-      // tenta o próximo
-    }
+    } catch {}
   }
   throw new Error(
-    `sql-wasm.wasm não encontrado nas URLs: \n${urls.join("\n")}\n` +
-    `Coloque o arquivo em /public/sql-wasm.wasm e rode com cache limpo (npx expo start --web -c).`
+    `sql-wasm.wasm não encontrado nas URLs:\n${urls.join("\n")}\n` +
+      `Coloque o arquivo em /public/sql-wasm.wasm e rode com cache limpo (npx expo start --web -c).`
   );
 }
 
@@ -78,12 +76,17 @@ export async function createDB(name: string): Promise<DB> {
     return rows[0];
   };
 
+  const select = async <T = Record<string, any>>(sql: string, params?: any[]) => {
+    // alias usado pelo módulo de export/import
+    return await getAll<T>(sql, params);
+  };
+
   const close = async () => {
     saveToLocalStorage(name, db);
     db.close();
   };
 
-  const api: DB = { exec, getAll, getOne, close };
+  const api: DB = { exec, select, getAll, getOne, close };
   return api;
 }
 
