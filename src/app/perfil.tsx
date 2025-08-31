@@ -1,27 +1,33 @@
 // app/perfil.tsx
-import React, { useEffect, useMemo, useState, useCallback } from "react";
-import { View, Text, StyleSheet, Pressable, Modal, ActivityIndicator, Alert, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  Alert,
+  Platform,
+  Pressable,
+  ScrollView,
+} from "react-native";
+import { router } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
-import { Stack, router } from "expo-router";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+import { LinearGradient } from "expo-linear-gradient";
+import { useFocusEffect } from "@react-navigation/native";
+
 import { exportSonhosJSON, importSonhosJSON } from "@/utils/exportImport";
 import { initDB } from "@/db";
 
-const C = {
-  rosaClaro: "#f4aeb6",
-  verdeMenta: "#a7eec0",
-  verdeBandeira: "#018749",
-  cinzaEscuro: "#2c3e50",
-  gradIni: "#ff5e78",
-  gradFim: "#ffa58d",
-  branco: "#ffffff",
-};
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function Perfil() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // modal de ações
   const [busy, setBusy] = useState(false);
   const [qtdSonhos, setQtdSonhos] = useState<number | null>(null);
+
+  const goHome = () => router.navigate("/");
 
   const loadCount = useCallback(async () => {
     try {
@@ -33,13 +39,29 @@ export default function Perfil() {
     }
   }, []);
 
-  useEffect(() => { loadCount(); }, [loadCount]);
+  useEffect(() => {
+    loadCount();
+  }, [loadCount]);
 
-  const titleRight = useMemo(() => (
-    <Pressable onPress={() => setOpen(true)} hitSlop={12}>
-      <FontAwesome name="ellipsis-v" size={20} color={C.branco} />
-    </Pressable>
-  ), []);
+  useFocusEffect(
+    useCallback(() => {
+      loadCount();
+    }, [loadCount])
+  );
+
+  const headerRight = useMemo(
+    () => (
+      <Pressable
+        onPress={() => setOpen(true)}
+        style={({ pressed }) => [pressed && { opacity: 0.7 }]}
+        accessibilityRole="button"
+      >
+        {/* mantém o ícone no topo direito como na principal */}
+        <FontAwesome name="user-circle" size={32} color="black" />
+      </Pressable>
+    ),
+    []
+  );
 
   async function onExportJSON() {
     try {
@@ -49,6 +71,8 @@ export default function Perfil() {
         Alert.alert("Exportar", "Download iniciado no navegador.");
       } else if (uri) {
         Alert.alert("Exportar", "Arquivo exportado/compartilhado.");
+      } else {
+        Alert.alert("Exportar", "Concluído.");
       }
     } catch (e: any) {
       Alert.alert("Erro ao exportar", e?.message ?? String(e));
@@ -63,232 +87,126 @@ export default function Perfil() {
       const { imported, skipped } = await importSonhosJSON();
       await loadCount();
       Alert.alert("Importar", `Importados: ${imported}\nIgnorados: ${skipped}`);
-      
     } catch (e: any) {
       Alert.alert("Erro ao importar", e?.message ?? String(e));
     } finally {
       setBusy(false);
     }
   }
-
-  function goHome() {
-    // ajuste a rota se sua home for diferente (ex.: "/index")
-    router.push("/");
-  }
+    function handleBack() { router.back(); }
+  
 
   return (
-    <LinearGradient colors={[C.gradIni, C.gradFim]} style={{ flex: 1 }}>
-      <SafeAreaView style={styles.ecProfile_container}>
-        <Stack.Screen
-          options={{
-            title: "Perfil",
-            headerStyle: { backgroundColor: "transparent" },
-            headerTitleStyle: { color: C.branco },
-            headerTransparent: true,
-            headerLeft: () => (
-              <Pressable onPress={goHome} hitSlop={12} style={{ paddingHorizontal: 8 }}>
-                <FontAwesome name="home" size={20} color={C.branco} />
-              </Pressable>
-            ),
-            headerRight: () => titleRight,
-          }}
-        />
+    <SafeAreaProvider>
+      <StatusBar style="dark" translucent={false} backgroundColor="#fff" />
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }} edges={["top", "left", "right"]}>
+        <LinearGradient
+          colors={["#7c74c4ff", "#f0c1b4ff"]}
+          style={{ flex: 1, justifyContent: "center" }}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={{ alignItems: "center", justifyContent: "center" }}>
+            <View
+              style={[
+                styles.card,
+                {
+                  backgroundColor: "rgba(255, 255, 255, 0.57)",
+                  minHeight: SCREEN_HEIGHT * 0.95,
+                  maxHeight: SCREEN_HEIGHT * 0.95,
+                  width: "90%",
+                },
+              ]}
+            >
+              {/* Topo: "voltar" (estilo do seu input) + ícone à direita */}
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", height: 42 }}>
+                <FontAwesome onPress={handleBack} name="arrow-left" size={32} color="black" />
+                
+              </View>
 
-        <View style={styles.ecProfile_headerCard}>
-          <View style={styles.ecProfile_avatarWrap}>
-            <FontAwesome name="user" size={56} color={C.cinzaEscuro} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.ecProfile_name}>EcosDaCama</Text>
-            <Text style={styles.ecProfile_meta}>
-              {qtdSonhos === null ? "—" : `${qtdSonhos} sonho(s)`} • {Platform.OS.toUpperCase()}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.ecProfile_section}>
-          <Text style={styles.ecProfile_sectionTitle}>Backup</Text>
-
-          <Pressable style={styles.ecProfile_item} onPress={() => setOpen(true)}>
-            <View style={styles.ecProfile_itemIcon}>
-              <FontAwesome name="cloud" size={20} color={C.verdeBandeira} />
-            </View>
-            <View style={styles.ecProfile_itemTextBox}>
-              <Text style={styles.ecProfile_itemTitle}>Exportar / Importar (JSON)</Text>
-              <Text style={styles.ecProfile_itemSubtitle}>Compatível com Web, Android e iOS</Text>
-            </View>
-            <FontAwesome name="chevron-right" size={16} color={C.cinzaEscuro} />
-          </Pressable>
-        </View>
-
-        <View style={[styles.ecProfile_section, { marginTop: 18 }]}>
-          <Text style={styles.ecProfile_sectionTitle}>Navegação</Text>
-
-          <Pressable style={styles.ecProfile_item} onPress={goHome}>
-            <View style={styles.ecProfile_itemIcon}>
-              <FontAwesome name="home" size={20} color={C.verdeBandeira} />
-            </View>
-            <View style={styles.ecProfile_itemTextBox}>
-              <Text style={styles.ecProfile_itemTitle}>Voltar ao Início</Text>
-              <Text style={styles.ecProfile_itemSubtitle}>Abrir tela principal</Text>
-            </View>
-            <FontAwesome name="chevron-right" size={16} color={C.cinzaEscuro} />
-          </Pressable>
-        </View>
-
-        {/* Modal de Ações (apenas JSON) */}
-        <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
-          <View style={styles.ecProfile_modalBackdrop}>
-            <View style={styles.ecProfile_modalCard}>
-              <Text style={styles.ecProfile_modalTitle}>Backup dos sonhos (JSON)</Text>
-
-              <Pressable style={styles.ecProfile_actionBtn} onPress={onExportJSON} disabled={busy}>
-                <FontAwesome name="cloud-upload" size={18} color={C.branco} />
-                <Text style={styles.ecProfile_actionText}>Exportar sonhos (JSON)</Text>
-              </Pressable>
-
-              <Pressable style={styles.ecProfile_actionBtn} onPress={onImportJSON} disabled={busy}>
-                <FontAwesome name="cloud-download" size={18} color={C.branco} />
-                <Text style={styles.ecProfile_actionText}>Importar sonhos (JSON)</Text>
-              </Pressable>
-
-              <Pressable style={styles.ecProfile_closeBtn} onPress={() => setOpen(false)} disabled={busy}>
-                <Text style={styles.ecProfile_closeText}>Fechar</Text>
-              </Pressable>
-
-              {busy && (
-                <View style={styles.ecProfile_loading}>
-                  <ActivityIndicator size="small" />
-                  <Text style={styles.ecProfile_loadingText}>Processando…</Text>
+              {/* Conteúdo como na listagem: área scrolável com cards/ações */}
+              <ScrollView contentContainerStyle={{ padding: 12, gap: 12 }} showsVerticalScrollIndicator>
+                {/* Header/Resumo */}
+                <View style={[styles.sonhoCard, { paddingVertical: 16 }]}>
+                  <Text style={styles.sonhoTitulo}>Perfil e Backup</Text>
+                  <Text style={styles.meta}>
+                    {qtdSonhos === null ? "—" : `${qtdSonhos} sonho(s)`} • {Platform.OS.toUpperCase()}
+                  </Text>
                 </View>
-              )}
+
+                {/* Ação: Exportar JSON */}
+                <Pressable
+                  onPress={onExportJSON}
+                  style={({ pressed }) => [styles.sonhoCard, pressed && { opacity: 0.9 }]}
+                  accessibilityRole="button"
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                    <FontAwesome name="cloud-upload" size={20} color="#2c3e50" />
+                    <Text style={styles.sonhoTitulo}>Exportar sonhos (JSON)</Text>
+                  </View>
+                  <Text style={styles.meta}>Cria um arquivo .json com todos os sonhos.</Text>
+                </Pressable>
+
+                {/* Ação: Importar JSON */}
+                <Pressable
+                  onPress={onImportJSON}
+                  style={({ pressed }) => [styles.sonhoCard, pressed && { opacity: 0.9 }]}
+                  accessibilityRole="button"
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                    <FontAwesome name="cloud-download" size={20} color="#2c3e50" />
+                    <Text style={styles.sonhoTitulo}>Importar sonhos (JSON)</Text>
+                  </View>
+                  <Text style={styles.meta}>Lê um .json exportado e faz merge seguro.</Text>
+                </Pressable>
+
+              
+              </ScrollView>
+
+            
             </View>
           </View>
-        </Modal>
+        </LinearGradient>
       </SafeAreaView>
-    </LinearGradient>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  ecProfile_container: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 80,
+  card: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    gap: 15,
   },
-
-  ecProfile_headerCard: {
-    flexDirection: "row",
-    alignItems: "center",
+  // Reaproveita o mesmo "visual" do seu TextInput de busca
+  pesquisa: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    fontSize: 16,
+    padding: 10,
+    backgroundColor: "#fff",
+    width: "85%",
+  },
+  sonhoCard: {
     backgroundColor: "rgba(255,255,255,0.9)",
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#e2e2e2",
+    borderRadius: 12,
+    padding: 12,
+    gap: 8,
+    ...(Platform.OS === "web" ? ({ userSelect: "none" } as any) : null),
   },
-  ecProfile_avatarWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: "#ffffff",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  ecProfile_name: {
-    fontSize: 22,
+  sonhoTitulo: {
+    fontSize: 16,
     fontWeight: "700",
-    color: C.cinzaEscuro,
+    color: "#2c3e50",
   },
-  ecProfile_meta: {
-    marginTop: 2,
-    color: C.cinzaEscuro,
-    opacity: 0.8,
+  meta: {
+    fontSize: 12,
+    color: "#555",
   },
-
-  ecProfile_section: {
-    gap: 10,
-  },
-  ecProfile_sectionTitle: {
-    color: C.branco,
-    fontSize: 14,
-    fontWeight: "600",
-    marginLeft: 8,
-    marginBottom: 6,
-    opacity: 0.9,
-  },
-
-  ecProfile_item: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.95)",
-    padding: 14,
-    borderRadius: 16,
-    gap: 12,
-  },
-  ecProfile_itemIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#ffffff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  ecProfile_itemTextBox: { flex: 1 },
-  ecProfile_itemTitle: { fontSize: 16, fontWeight: "600", color: C.cinzaEscuro },
-  ecProfile_itemSubtitle: { fontSize: 12, color: C.cinzaEscuro, opacity: 0.7 },
-
-  // Modal
-  ecProfile_modalBackdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.35)",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
-  },
-  ecProfile_modalCard: {
-    width: "100%",
-    maxWidth: 420,
-    backgroundColor: C.cinzaEscuro,
-    borderRadius: 20,
-    padding: 16,
-  },
-  ecProfile_modalTitle: {
-    color: C.branco,
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 12,
-  },
-  ecProfile_actionBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: C.verdeBandeira,
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginBottom: 10,
-  },
-  ecProfile_actionText: { color: C.branco, fontSize: 15, fontWeight: "600" },
-
-  ecProfile_closeBtn: {
-    alignSelf: "center",
-    marginTop: 4,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-  },
-  ecProfile_closeText: { color: C.rosaClaro, fontWeight: "700" },
-
-  ecProfile_loading: {
-    marginTop: 8,
-    alignSelf: "center",
-    flexDirection: "row",
-    gap: 10,
-    alignItems: "center",
-  },
-  ecProfile_loadingText: { color: C.branco, opacity: 0.9 },
 });

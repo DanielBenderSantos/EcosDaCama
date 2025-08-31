@@ -153,7 +153,6 @@ export default function NovoSonho() {
             <View style={[style.card, { backgroundColor: "rgba(255,255,255,0.57)", minHeight: Dimensions.get("window").height * 0.95, maxHeight: Dimensions.get("window").height * 0.95, width: "90%" }]}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", height: 42 }}>
                 <FontAwesome onPress={handleBack} name="arrow-left" size={32} color="black" />
-                <FontAwesome name="user-circle" size={32} color="black" />
               </View>
 
               <ScrollView style={{ gap: 12 }} contentContainerStyle={{ padding: 12 }} showsVerticalScrollIndicator>
