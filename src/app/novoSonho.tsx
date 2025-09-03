@@ -8,21 +8,11 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import CamposDataHora from "@/components/camposDataHora";
 import TipoSonhoCheckbox, { TipoSonhoId } from "@/components/tipoSonho";
-// import { Button } from "@/components/button"; // ❌ não usamos mais aqui
-import SentimentosCheckbox from "@/components/sentimentosCheckbox";
+// ⬇️ Componente (emoji+cor), sem exibir números
+import HumorEmojiScale, { HumorScore } from "@/components/humorEmojiScale";
 
 // DB — ajuste o caminho se for diferente
-import { initDB, addSonho, getSonho, updateSonho, type Sonho, type SentimentoId } from "@/db";
-
-type SentimentosState = {
-  feliz: boolean; triste: boolean; assustado: boolean; confuso: boolean;
-  raiva: boolean; aliviado: boolean; ansioso: boolean; sereno: boolean;
-};
-
-const SENTIMENTOS_INICIAIS: SentimentosState = {
-  feliz: false, triste: false, assustado: false, confuso: false,
-  raiva: false, aliviado: false, ansioso: false, sereno: false,
-};
+import { initDB, addSonho, getSonho, updateSonho, type Sonho } from "@/db";
 
 const COLORS = {
   rosaClaro: "#f4aeb6",
@@ -46,8 +36,7 @@ function ActionButton({
   disabled?: boolean;
   variant?: "primary" | "secondary";
 }) {
-  const bg =
-    variant === "primary" ? COLORS.verdeBandeira : "#ddd";
+  const bg = variant === "primary" ? COLORS.verdeBandeira : "#ddd";
   const fg = variant === "primary" ? COLORS.branco : "#333";
 
   return (
@@ -72,19 +61,16 @@ export default function NovoSonho() {
 
   const [when, setWhen] = useState(new Date());
   const [tipo, setTipo] = useState<TipoSonhoId | null>(null);
-  const [sentimentos, setSentimentos] = useState<SentimentosState>({ ...SENTIMENTOS_INICIAIS });
   const [textoSonho, setTextoSonho] = useState("");
   const [textoTitulo, setTextoTitulo] = useState("");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // 0 = INÍCIO | 1 = SENTIMENTOS | 2 = TIPO
-  const [step, setStep] = useState<0 | 1 | 2>(0);
+  // Humor 1..5 (sem exibir números para o usuário)
+  const [humor, setHumor] = useState<HumorScore | null>(null);
 
-  const totalSentimentos = useMemo(
-    () => Object.values(sentimentos).filter(Boolean).length,
-    [sentimentos]
-  );
+  // 0 = INÍCIO | 1 = HUMOR | 2 = TIPO
+  const [step, setStep] = useState<0 | 1 | 2>(0);
 
   useEffect(() => { (async () => { try { await initDB(); } catch (e) { console.error("[DB] init:", e); } })(); }, []);
 
@@ -103,7 +89,11 @@ export default function NovoSonho() {
         setTextoTitulo(s.titulo ?? "");
         setTextoSonho(s.sonho ?? "");
         setTipo(dbTipoToUiTipo(s.tipo));
-        setSentimentos(arrayToSentimentosState(s.sentimentos || []));
+
+        // carrega humor salvo (se existir)
+        if (typeof s.humor === "number") {
+          setHumor(Math.min(5, Math.max(1, s.humor)) as HumorScore);
+        }
 
         if (s.when_at) {
           const d = new Date(s.when_at);
@@ -136,18 +126,6 @@ export default function NovoSonho() {
     return null;
   }
 
-  function arrayToSentimentosState(arr: string[]): SentimentosState {
-    const base = { ...SENTIMENTOS_INICIAIS };
-    arr.forEach((k) => { if (k in base) (base as any)[k] = true; });
-    return base;
-  }
-
-  function currentSentimentosArray(): SentimentoId[] {
-    return (Object.entries(sentimentos) as [keyof SentimentosState, boolean][])
-      .filter(([, v]) => v)
-      .map(([k]) => k as SentimentoId);
-  }
-
   const salvar = async () => {
     try {
       if (saving) return;
@@ -156,29 +134,29 @@ export default function NovoSonho() {
 
       if (!textoTitulo.trim()) return alertWebMobile("Informe um título.");
       if (!textoSonho.trim())  return alertWebMobile("Descreva o sonho.");
+      if (humor == null)       return alertWebMobile("Escolha como foi o sonho (humor).");
       if (!tipo)               return alertWebMobile("Selecione o tipo do sonho.");
-      if (totalSentimentos === 0) return alertWebMobile("Selecione pelo menos um sentimento.");
 
       setSaving(true);
 
       const payload: Omit<Sonho, "id"> = {
         titulo: textoTitulo.trim(),
         sonho: textoSonho.trim(),
-        sentimentos: currentSentimentosArray(),
         tipo: normalizeTipo(tipo),
+        humor, // salva o humor (1..5)
         when_at: when.toISOString(),
       };
 
       if (editingId) {
-        await updateSonho(editingId, payload);
+        await updateSonho(editingId, payload as any);
         alertWebMobile("Sonho atualizado!");
       } else {
-        await addSonho(payload);
+        await addSonho(payload as any);
         alertWebMobile("Sonho salvo!");
         setTextoTitulo("");
         setTextoSonho("");
         setTipo(null);
-        setSentimentos({ ...SENTIMENTOS_INICIAIS });
+        setHumor(null);
       }
 
       router.back();
@@ -196,8 +174,8 @@ export default function NovoSonho() {
       return;
     }
     if (step === 1) {
-      if (totalSentimentos === 0) {
-        alertWebMobile("Selecione pelo menos um sentimento para continuar.");
+      if (humor == null) {
+        alertWebMobile("Escolha como foi o sonho (humor) para continuar.");
         return;
       }
       setStep(2);
@@ -218,7 +196,7 @@ export default function NovoSonho() {
         <Text style={[styles.stepText, step === 0 && styles.stepTextActive]}>Início</Text>
       </Pressable>
       <Pressable onPress={() => setStep(1)} style={[styles.stepItem, step === 1 && styles.stepActive]}>
-        <Text style={[styles.stepText, step === 1 && styles.stepTextActive]}>Sentimentos</Text>
+        <Text style={[styles.stepText, step === 1 && styles.stepTextActive]}>Humor</Text>
       </Pressable>
       <Pressable onPress={() => setStep(2)} style={[styles.stepItem, step === 2 && styles.stepActive]}>
         <Text style={[styles.stepText, step === 2 && styles.stepTextActive]}>Tipo</Text>
@@ -294,13 +272,9 @@ export default function NovoSonho() {
 
                 {step === 1 && (
                   <View>
-                    <Text style={styles.sectionTitle}>Sentimentos</Text>
-                    <SentimentosCheckbox value={sentimentos} onChange={setSentimentos} />
-                    <Text style={styles.helperText}>
-                      {totalSentimentos === 0
-                        ? "Selecione pelo menos 1 sentimento."
-                        : `${totalSentimentos} sentimento(s) selecionado(s).`}
-                    </Text>
+                    <Text style={styles.sectionTitle}>Humor</Text>
+                    <HumorEmojiScale value={humor} onChange={setHumor} />
+                    {humor == null && <Text style={styles.helperText}>Escolha uma opção.</Text>}
                   </View>
                 )}
 
@@ -330,7 +304,7 @@ export default function NovoSonho() {
                   onPress={nextFromStep}
                   disabled={
                     loading || saving ||
-                    (step === 1 && totalSentimentos === 0) ||
+                    (step === 1 && humor == null) ||
                     (step === 2 && !tipo)
                   }
                   variant="primary"

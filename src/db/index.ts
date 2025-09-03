@@ -1,3 +1,4 @@
+// db.ts
 import { CREATE_META, CREATE_SONHOS_TABLE, DB_NAME, INIT_SCHEMA_VERSION } from "./schema";
 import type { DB } from "./types";
 import { createDB } from "./driver"; // 👈 estático por plataforma
@@ -13,12 +14,12 @@ export async function initDB(): Promise<DB> {
     await driver.exec(INIT_SCHEMA_VERSION);
     await driver.exec(CREATE_SONHOS_TABLE);
 
-    // 🔧 Migração idempotente: adiciona a coluna when_at se ainda não existir
-    try {
-      await driver.exec(`ALTER TABLE Sonhos ADD COLUMN when_at TEXT`);
-    } catch {
-      // se já existir, o ALTER falha e a gente ignora
-    }
+    // 🔧 Migrações idempotentes (seguras se você NÃO reinstalar, mas ok manter)
+    // garantir coluna when_at (se vier de um DB antigo sem ela)
+    try { await driver.exec(`ALTER TABLE Sonhos ADD COLUMN when_at TEXT`); } catch {}
+    // garantir coluna humor (se vier de um DB antigo)
+    try { await driver.exec(`ALTER TABLE Sonhos ADD COLUMN humor INTEGER`); } catch {}
+    // ⚠️ Não há mais "sentimentos" no schema novo.
   }
   return driver;
 }
@@ -29,30 +30,28 @@ function getDBOrThrow(): DB {
 }
 
 // ===== Tipos de domínio =====
-export type SentimentoId =
-  | "feliz" | "triste" | "assustado" | "confuso"
-  | "raiva" | "aliviado" | "ansioso" | "sereno";
 
 export interface Sonho {
   id?: number;
   titulo: string;
   sonho: string;
-  sentimentos: SentimentoId[];
   tipo: "normal" | "lúcido" | "pesadelo" | "recorrente";
-  when_at?: string;         // ← ISO (Date.toISOString())
+  humor?: number | null;  // 1..5 (1=ótimo, 5=péssimo)
+  when_at?: string;       // ISO (Date.toISOString())
 }
 
 // ===== CRUD =====
+
 export async function addSonho(data: Omit<Sonho, "id">): Promise<void> {
   const db = getDBOrThrow();
   await db.exec(
-    `INSERT INTO Sonhos (titulo, sonho, sentimentos, tipo, when_at) VALUES (?, ?, ?, ?, ?)`,
+    `INSERT INTO Sonhos (titulo, sonho, tipo, humor, when_at) VALUES (?, ?, ?, ?, ?)`,
     [
       data.titulo,
       data.sonho,
-      JSON.stringify(data.sentimentos),
       data.tipo,
-      data.when_at ?? null,   // pode ser null se não quiser salvar
+      data.humor ?? null,
+      data.when_at ?? null,
     ]
   );
 }
@@ -63,18 +62,20 @@ export async function listSonhos(): Promise<Sonho[]> {
     id: number;
     titulo: string;
     sonho: string;
-    sentimentos: string;
     tipo: string;
+    humor: number | null;
     when_at: string | null;
   }>(
-    `SELECT id, titulo, sonho, sentimentos, tipo, when_at FROM Sonhos ORDER BY id DESC`
+    `SELECT id, titulo, sonho, tipo, humor, when_at
+     FROM Sonhos
+     ORDER BY id DESC`
   );
   return rows.map(r => ({
     id: r.id,
     titulo: r.titulo,
     sonho: r.sonho,
-    sentimentos: JSON.parse(r.sentimentos || "[]"),
     tipo: r.tipo as Sonho["tipo"],
+    humor: r.humor ?? null,
     when_at: r.when_at ?? undefined,
   }));
 }
@@ -85,11 +86,13 @@ export async function getSonho(id: number): Promise<Sonho | undefined> {
     id: number;
     titulo: string;
     sonho: string;
-    sentimentos: string;
     tipo: string;
+    humor: number | null;
     when_at: string | null;
   }>(
-    `SELECT id, titulo, sonho, sentimentos, tipo, when_at FROM Sonhos WHERE id = ?`,
+    `SELECT id, titulo, sonho, tipo, humor, when_at
+     FROM Sonhos
+     WHERE id = ?`,
     [id]
   );
   if (!r) return undefined;
@@ -97,8 +100,8 @@ export async function getSonho(id: number): Promise<Sonho | undefined> {
     id: r.id,
     titulo: r.titulo,
     sonho: r.sonho,
-    sentimentos: JSON.parse(r.sentimentos || "[]"),
     tipo: r.tipo as Sonho["tipo"],
+    humor: r.humor ?? null,
     when_at: r.when_at ?? undefined,
   };
 }
@@ -108,11 +111,11 @@ export async function updateSonho(id: number, patch: Partial<Omit<Sonho, "id">>)
   const sets: string[] = [];
   const vals: any[] = [];
 
-  if (patch.titulo !== undefined)       { sets.push("titulo = ?");       vals.push(patch.titulo); }
-  if (patch.sonho !== undefined)        { sets.push("sonho = ?");        vals.push(patch.sonho); }
-  if (patch.sentimentos !== undefined)  { sets.push("sentimentos = ?");  vals.push(JSON.stringify(patch.sentimentos)); }
-  if (patch.tipo !== undefined)         { sets.push("tipo = ?");         vals.push(patch.tipo); }
-  if (patch.when_at !== undefined)      { sets.push("when_at = ?");      vals.push(patch.when_at); }
+  if (patch.titulo !== undefined)  { sets.push("titulo = ?");  vals.push(patch.titulo); }
+  if (patch.sonho !== undefined)   { sets.push("sonho = ?");   vals.push(patch.sonho); }
+  if (patch.tipo !== undefined)    { sets.push("tipo = ?");    vals.push(patch.tipo); }
+  if (patch.humor !== undefined)   { sets.push("humor = ?");   vals.push(patch.humor); }
+  if (patch.when_at !== undefined) { sets.push("when_at = ?"); vals.push(patch.when_at); }
 
   if (!sets.length) return;
   vals.push(id);

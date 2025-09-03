@@ -18,10 +18,25 @@ import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "@react-navigation/native";
 
-// ⬇️ caminho onde está o arquivo do DB
 import { initDB, listSonhos, deleteSonho, type Sonho } from "@/db";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+// Helpers de humor
+const HUMOR_LABEL: Record<NonNullable<Sonho["humor"]>, string> = {
+  1: "Muito bom",
+  2: "Bom",
+  3: "Neutro",
+  4: "Ruim",
+  5: "Péssimo",
+};
+const HUMOR_EMOJI: Record<NonNullable<Sonho["humor"]>, string> = {
+  1: "😍",
+  2: "🙂",
+  3: "😐",
+  4: "😟",
+  5: "😱",
+};
 
 export default function Index() {
   const [sonhos, setSonhos] = useState<Sonho[]>([]);
@@ -66,12 +81,17 @@ export default function Index() {
     const q = query.trim().toLowerCase();
     if (!q) return sonhos;
     return sonhos.filter((s) => {
-      const sentimentosTxt = (s.sentimentos || []).join(", ").toLowerCase();
+      const titulo = (s.titulo || "").toLowerCase();
+      const corpo = (s.sonho || "").toLowerCase();
+      const tipo = (s.tipo || "").toLowerCase();
+      const humorLabel = s.humor ? HUMOR_LABEL[s.humor]?.toLowerCase() ?? "" : "";
+      const humorEmoji = s.humor ? HUMOR_EMOJI[s.humor] : "";
       return (
-        (s.titulo || "").toLowerCase().includes(q) ||
-        (s.sonho || "").toLowerCase().includes(q) ||
-        (s.tipo || "").toLowerCase().includes(q) ||
-        sentimentosTxt.includes(q)
+        titulo.includes(q) ||
+        corpo.includes(q) ||
+        tipo.includes(q) ||
+        humorLabel.includes(q) ||
+        humorEmoji.includes(q)
       );
     });
   }, [query, sonhos]);
@@ -108,7 +128,10 @@ export default function Index() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" translucent={false} backgroundColor="#fff" />
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }} edges={["top", "left", "right"]}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: "#fff" }}
+        edges={["top", "left", "right"]}
+      >
         <LinearGradient
           colors={["#7c74c4ff", "#f0c1b4ff"]}
           style={{ flex: 1, justifyContent: "center" }}
@@ -128,7 +151,14 @@ export default function Index() {
               ]}
             >
               {/* Topo: busca + avatar */}
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", height: 42 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  height: 42,
+                }}
+              >
                 <TextInput
                   placeholder="Pesquisar"
                   value={query}
@@ -149,7 +179,9 @@ export default function Index() {
               <ScrollView
                 contentContainerStyle={{ padding: 12, gap: 12 }}
                 showsVerticalScrollIndicator
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                refreshControl={
+                  <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
               >
                 {loading ? (
                   <Text style={styles.muted}>Carregando…</Text>
@@ -159,8 +191,8 @@ export default function Index() {
                   filtered.map((s) => (
                     <Pressable
                       key={s.id}
-                      onPress={() => openEdit(s.id)}            // toque curto → editar
-                      onLongPress={() => confirmDelete(s.id)}    // long press → excluir (mobile)
+                      onPress={() => openEdit(s.id)}
+                      onLongPress={() => confirmDelete(s.id)}
                       delayLongPress={400}
                       accessibilityRole="button"
                       style={({ pressed }) => [
@@ -168,7 +200,6 @@ export default function Index() {
                         Platform.OS === "web" && ({ cursor: "pointer" } as any),
                         pressed && { opacity: 0.9 },
                       ]}
-                      // clique direito (web) → excluir
                       {...(Platform.OS === "web"
                         ? {
                             onContextMenu: (e: any) => {
@@ -178,23 +209,27 @@ export default function Index() {
                           }
                         : {})}
                     >
-                      {/* Título */}
-                      <Text style={styles.sonhoTitulo}>{s.titulo || "Sem título"}</Text>
+                      {/* título */}
+                      <Text style={styles.sonhoTitulo}>
+                        {s.titulo || "Sem título"}
+                      </Text>
 
-                      {/* Trecho */}
+                      {/* trecho */}
                       <Text style={styles.sonhoTrecho} numberOfLines={3}>
                         {s.sonho}
                       </Text>
 
-                      {/* Metadados */}
-                      <View style={{ gap: 4 }}>
+                      {/* metadados em coluna */}
+                      <View style={{ marginTop: 6 }}>
                         <Text style={styles.meta}>
                           Tipo: <Text style={styles.metaStrong}>{s.tipo}</Text>
                         </Text>
                         <Text style={styles.meta}>
-                          Sentimentos:{" "}
+                          Humor:{" "}
                           <Text style={styles.metaStrong}>
-                            {s.sentimentos?.length ? s.sentimentos.join(", ") : "—"}
+                            {s.humor
+                              ? `${HUMOR_EMOJI[s.humor]} ${HUMOR_LABEL[s.humor]}`
+                              : "—"}
                           </Text>
                         </Text>
                       </View>
@@ -260,6 +295,7 @@ const styles = StyleSheet.create({
   meta: {
     fontSize: 12,
     color: "#555",
+    marginTop: 2,
   },
   metaStrong: {
     fontWeight: "600",
