@@ -132,6 +132,7 @@ export default function Index() {
                 <TextInput
                   placeholder="Pesquisar"
                   value={query}
+                  placeholderTextColor={"black"}
                   onChangeText={setQuery}
                   style={styles.pesquisa}
                 />

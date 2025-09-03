@@ -1,4 +1,4 @@
-import { View, Text, Alert, Platform, ScrollView, StyleSheet, Dimensions, TextInput } from "react-native";
+import { View, Text, Alert, Platform, ScrollView, StyleSheet, Dimensions, TextInput, Pressable } from "react-native";
 import React, { useEffect, useMemo, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
@@ -8,7 +8,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import CamposDataHora from "@/components/camposDataHora";
 import TipoSonhoCheckbox, { TipoSonhoId } from "@/components/tipoSonho";
-import { Button } from "@/components/button";
+// import { Button } from "@/components/button"; // ❌ não usamos mais aqui
 import SentimentosCheckbox from "@/components/sentimentosCheckbox";
 
 // DB — ajuste o caminho se for diferente
@@ -24,17 +24,67 @@ const SENTIMENTOS_INICIAIS: SentimentosState = {
   raiva: false, aliviado: false, ansioso: false, sereno: false,
 };
 
+const COLORS = {
+  rosaClaro: "#f4aeb6",
+  verdeMenta: "#a7eec0",
+  verdeBandeira: "#018749",
+  cinzaEscuro: "#2c3e50",
+  gradInicio: "#ff5e78",
+  gradFim: "#ffa58d",
+  branco: "#ffffff",
+};
+
+/** Botão local simples para a barra fixa */
+function ActionButton({
+  label,
+  onPress,
+  disabled,
+  variant = "primary",
+}: {
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+  variant?: "primary" | "secondary";
+}) {
+  const bg =
+    variant === "primary" ? COLORS.verdeBandeira : "#ddd";
+  const fg = variant === "primary" ? COLORS.branco : "#333";
+
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      style={({ pressed }) => [
+        styles.actionBtn,
+        { backgroundColor: bg, opacity: disabled ? 0.6 : pressed ? 0.9 : 1 },
+      ]}
+    >
+      <Text style={{ color: fg, fontWeight: "700", fontSize: 16 }}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 export default function NovoSonho() {
   const params = useLocalSearchParams<{ id?: string }>();
   const editingId = useMemo(() => (params?.id ? Number(params.id) : undefined), [params?.id]);
 
-  const [when, setWhen] = useState(new Date()); // controlado pelo picker
+  const [when, setWhen] = useState(new Date());
   const [tipo, setTipo] = useState<TipoSonhoId | null>(null);
   const [sentimentos, setSentimentos] = useState<SentimentosState>({ ...SENTIMENTOS_INICIAIS });
   const [textoSonho, setTextoSonho] = useState("");
   const [textoTitulo, setTextoTitulo] = useState("");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // 0 = INÍCIO | 1 = SENTIMENTOS | 2 = TIPO
+  const [step, setStep] = useState<0 | 1 | 2>(0);
+
+  const totalSentimentos = useMemo(
+    () => Object.values(sentimentos).filter(Boolean).length,
+    [sentimentos]
+  );
 
   useEffect(() => { (async () => { try { await initDB(); } catch (e) { console.error("[DB] init:", e); } })(); }, []);
 
@@ -55,10 +105,9 @@ export default function NovoSonho() {
         setTipo(dbTipoToUiTipo(s.tipo));
         setSentimentos(arrayToSentimentosState(s.sentimentos || []));
 
-        // 👉 carrega a data/hora salva no banco (when_at) se existir
         if (s.when_at) {
           const d = new Date(s.when_at);
-          if (!isNaN(d.getTime())) setWhen(d); // <-- usa a do banco
+          if (!isNaN(d.getTime())) setWhen(d);
         }
       } catch (e) {
         console.error(e);
@@ -71,7 +120,6 @@ export default function NovoSonho() {
 
   function handleBack() { router.back(); }
 
-  // UI <-> DB
   function normalizeTipo(t: TipoSonhoId): "normal" | "lúcido" | "pesadelo" | "recorrente" {
     const m = (t || "").toString().toLowerCase();
     if (m === "lucido") return "lúcido";
@@ -106,20 +154,19 @@ export default function NovoSonho() {
 
       await initDB();
 
-      // validações
       if (!textoTitulo.trim()) return alertWebMobile("Informe um título.");
       if (!textoSonho.trim())  return alertWebMobile("Descreva o sonho.");
       if (!tipo)               return alertWebMobile("Selecione o tipo do sonho.");
+      if (totalSentimentos === 0) return alertWebMobile("Selecione pelo menos um sentimento.");
 
       setSaving(true);
 
-      // inclui when_at com o valor do picker
       const payload: Omit<Sonho, "id"> = {
         titulo: textoTitulo.trim(),
         sonho: textoSonho.trim(),
         sentimentos: currentSentimentosArray(),
         tipo: normalizeTipo(tipo),
-        when_at: when.toISOString(), // <-- salva a data/hora escolhida
+        when_at: when.toISOString(),
       };
 
       if (editingId) {
@@ -128,7 +175,6 @@ export default function NovoSonho() {
       } else {
         await addSonho(payload);
         alertWebMobile("Sonho salvo!");
-        // limpa formulário ao criar
         setTextoTitulo("");
         setTextoSonho("");
         setTipo(null);
@@ -144,39 +190,152 @@ export default function NovoSonho() {
     }
   };
 
+  const nextFromStep = async () => {
+    if (step === 0) {
+      setStep(1);
+      return;
+    }
+    if (step === 1) {
+      if (totalSentimentos === 0) {
+        alertWebMobile("Selecione pelo menos um sentimento para continuar.");
+        return;
+      }
+      setStep(2);
+      return;
+    }
+    await salvar();
+  };
+
+  const prevFromStep = () => {
+    if (step === 2) return setStep(1);
+    if (step === 1) return setStep(0);
+    handleBack();
+  };
+
+  const StepPill = () => (
+    <View style={styles.stepPill}>
+      <Pressable onPress={() => setStep(0)} style={[styles.stepItem, step === 0 && styles.stepActive]}>
+        <Text style={[styles.stepText, step === 0 && styles.stepTextActive]}>Início</Text>
+      </Pressable>
+      <Pressable onPress={() => setStep(1)} style={[styles.stepItem, step === 1 && styles.stepActive]}>
+        <Text style={[styles.stepText, step === 1 && styles.stepTextActive]}>Sentimentos</Text>
+      </Pressable>
+      <Pressable onPress={() => setStep(2)} style={[styles.stepItem, step === 2 && styles.stepActive]}>
+        <Text style={[styles.stepText, step === 2 && styles.stepTextActive]}>Tipo</Text>
+      </Pressable>
+    </View>
+  );
+
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" translucent={false} backgroundColor="#fff" />
       <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }} edges={["top", "left", "right"]}>
-        <LinearGradient colors={["#7c74c4ff", "#f0c1b4ff"]} style={{ flex: 1, justifyContent: "center" }} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+        <LinearGradient
+          colors={["#7c74c4ff", "#f0c1b4ff"]}
+          style={{ flex: 1, justifyContent: "center" }}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+        >
           <View style={{ alignItems: "center", justifyContent: "center" }}>
-            <View style={[style.card, { backgroundColor: "rgba(255,255,255,0.57)", minHeight: Dimensions.get("window").height * 0.95, maxHeight: Dimensions.get("window").height * 0.95, width: "90%" }]}>
+            <View
+              style={[
+                style.card,
+                {
+                  backgroundColor: "rgba(255,255,255,0.57)",
+                  minHeight: Dimensions.get("window").height * 0.95,
+                  maxHeight: Dimensions.get("window").height * 0.95,
+                  width: "90%",
+                },
+              ]}
+            >
+              {/* TOP BAR */}
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", height: 42 }}>
                 <FontAwesome onPress={handleBack} name="arrow-left" size={32} color="black" />
               </View>
 
-              <ScrollView style={{ gap: 12 }} contentContainerStyle={{ padding: 12 }} showsVerticalScrollIndicator>
-                <Text style={{ fontSize: 32, textAlign: "center", marginBottom: 32 }}>
-                  {editingId ? "Editar Sonho" : "Novo Sonho"}
-                </Text>
+              {/* TÍTULO */}
+              <Text style={{ fontSize: 32, textAlign: "center", marginBottom: 8 }}>
+                {editingId ? "Editar Sonho" : "Novo Sonho"}
+              </Text>
 
-                <View>
-                  <View style={{ gap: 12 }}>
-                    <CamposDataHora value={when} onChange={setWhen} labelDate="Data " labelTime="Hora " is24Hour />
-                    <TextInput placeholder="Título" style={style.pesquisa} value={textoTitulo} onChangeText={setTextoTitulo} />
-                    <TextInput placeholder="Descreva seu sonho..." value={textoSonho} onChangeText={setTextoSonho} multiline numberOfLines={6} textAlignVertical="top" style={style.textarea} />
+              {/* PILLS DE ETAPAS */}
+              <StepPill />
 
-                    <SentimentosCheckbox value={sentimentos} onChange={setSentimentos} />
-                    <TipoSonhoCheckbox value={tipo} onChange={setTipo} />
-
-                    <Button
-                      title={saving ? (editingId ? "Atualizando..." : "Salvando...") : (editingId ? "Atualizar" : "Salvar")}
-                      onPress={salvar}
-                      disabled={saving || loading}
-                    />
+              {/* CONTEÚDO — UMA SEÇÃO POR VEZ */}
+              <ScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={{ padding: 12, paddingBottom: 120 }}
+                showsVerticalScrollIndicator
+              >
+                {step === 0 && (
+                  <View>
+                    <Text style={styles.sectionTitle}>Início</Text>
+                    <View style={{ gap: 12 }}>
+                      <CamposDataHora value={when} onChange={setWhen} labelDate="Data " labelTime="Hora " is24Hour />
+                      <TextInput
+                        placeholder="Título"
+                        style={style.pesquisa}
+                        value={textoTitulo}
+                        placeholderTextColor={"black"}
+                        onChangeText={setTextoTitulo}
+                      />
+                      <TextInput
+                        placeholder="Descreva seu sonho..."
+                        value={textoSonho}
+                        placeholderTextColor={"black"}
+                        onChangeText={setTextoSonho}
+                        multiline
+                        numberOfLines={6}
+                        textAlignVertical="top"
+                        style={style.textarea}
+                      />
+                    </View>
                   </View>
-                </View>
+                )}
+
+                {step === 1 && (
+                  <View>
+                    <Text style={styles.sectionTitle}>Sentimentos</Text>
+                    <SentimentosCheckbox value={sentimentos} onChange={setSentimentos} />
+                    <Text style={styles.helperText}>
+                      {totalSentimentos === 0
+                        ? "Selecione pelo menos 1 sentimento."
+                        : `${totalSentimentos} sentimento(s) selecionado(s).`}
+                    </Text>
+                  </View>
+                )}
+
+                {step === 2 && (
+                  <View>
+                    <Text style={styles.sectionTitle}>Tipo de sonho</Text>
+                    <TipoSonhoCheckbox value={tipo} onChange={setTipo} />
+                    {!tipo && <Text style={styles.helperText}>Selecione um tipo para continuar.</Text>}
+                  </View>
+                )}
               </ScrollView>
+
+              {/* BARRA DE AÇÕES FIXA */}
+              <View style={styles.bottomBar}>
+                <ActionButton
+                  label={step === 0 ? "Voltar" : "Voltar seção"}
+                  onPress={prevFromStep}
+                  disabled={loading || saving}
+                  variant="secondary"
+                />
+                <ActionButton
+                  label={
+                    step < 2
+                      ? "Próximo"
+                      : (saving ? (editingId ? "Atualizando..." : "Salvando...") : (editingId ? "Atualizar" : "Salvar"))
+                  }
+                  onPress={nextFromStep}
+                  disabled={
+                    loading || saving ||
+                    (step === 1 && totalSentimentos === 0) ||
+                    (step === 2 && !tipo)
+                  }
+                  variant="primary"
+                />
+              </View>
             </View>
           </View>
         </LinearGradient>
@@ -186,7 +345,7 @@ export default function NovoSonho() {
 }
 
 function alertWebMobile(msg: string) {
-  if (Platform.OS === "web") window.alert(msg);
+  if (Platform.OS === "web") (window as any)?.alert?.(msg);
   else Alert.alert("Aviso", msg);
 }
 
@@ -194,4 +353,58 @@ export const style = StyleSheet.create({
   card: { backgroundColor: "#fff", padding: 20, borderRadius: 10, shadowOpacity: 0.25, shadowRadius: 3.84, gap: 15 },
   textarea: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, minHeight: 100, fontSize: 16, backgroundColor: "#fff" },
   pesquisa: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, fontSize: 16, backgroundColor: "#fff" },
+});
+
+const styles = StyleSheet.create({
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.cinzaEscuro,
+    marginBottom: 8,
+  },
+  helperText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: COLORS.cinzaEscuro,
+  },
+  stepPill: {
+    flexDirection: "row",
+    alignSelf: "center",
+    backgroundColor: "rgba(255,255,255,0.85)",
+    padding: 6,
+    borderRadius: 999,
+    gap: 4,
+    marginBottom: 6,
+  },
+  stepItem: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+  },
+  stepActive: {
+    backgroundColor: COLORS.verdeMenta,
+  },
+  stepText: {
+    fontSize: 13,
+    color: COLORS.cinzaEscuro,
+    fontWeight: "600",
+  },
+  stepTextActive: {
+    color: "#0f172a",
+  },
+  bottomBar: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    bottom: 16,
+    flexDirection: "row",
+    gap: 12,
+  },
+  actionBtn: {
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
