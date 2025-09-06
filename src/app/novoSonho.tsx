@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
   Keyboard,
   KeyboardEvent,
-  findNodeHandle,
+  findNodeHandle, // ok: só usamos em iOS/Android
 } from "react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
@@ -51,7 +51,6 @@ function ActionButton({
 }) {
   const bg = variant === "primary" ? COLORS.verdeBandeira : "#ddd";
   const fg = variant === "primary" ? COLORS.branco : "#333";
-
   return (
     <Pressable
       onPress={onPress}
@@ -80,15 +79,13 @@ export default function NovoSonho() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const [interpretacao, setInterpretacao] = useState<string | undefined>(
-    undefined
-  );
+  const [interpretacao, setInterpretacao] = useState<string | undefined>(undefined);
   const [iaLoading, setIaLoading] = useState(false);
 
   const [humor, setHumor] = useState<HumorScore | null>(null);
   const [step, setStep] = useState<0 | 1 | 2>(0);
 
-  // 🔧 Keyboard/Scroll
+  // Keyboard/Scroll
   const [kbHeight, setKbHeight] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
   const containerRef = useRef<View>(null);
@@ -114,11 +111,27 @@ export default function NovoSonho() {
     };
   }, []);
 
-  // 🔧 função aceita qualquer ref com .current (View ou TextInput)
+  // 👇 Web usa scrollIntoView; mobile usa measureLayout + findNodeHandle
   const scrollToInput = (
     ref: { current: View | TextInput | null },
     extraOffset = 16
   ) => {
+    // Web: use o próprio DOM
+    if (Platform.OS === "web") {
+      const el: any = ref.current as any;
+      // tenta pegar o elemento real (TextInput pode virar <input> ou <textarea>)
+      const node =
+        el?.scrollIntoView
+          ? el
+          : el?._node /* RNW internals */ ||
+            el?._inputRef?.current /* TextInput internals */;
+      try {
+        node?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+      } catch {}
+      return;
+    }
+
+    // iOS/Android
     requestAnimationFrame(() => {
       const nodeContainer = findNodeHandle(containerRef.current);
       const input = ref.current as any;
@@ -137,7 +150,7 @@ export default function NovoSonho() {
     });
   };
 
-  // ----------------- DB load -------------------
+  // DB load
   useEffect(() => {
     (async () => {
       try {
@@ -203,7 +216,6 @@ export default function NovoSonho() {
     return null;
   }
 
-  // salvar() igual ao seu, não mexi
   const salvar = async () => {
     try {
       if (saving) return;
@@ -373,61 +385,103 @@ export default function NovoSonho() {
                   <View ref={containerRef}>
                     {step === 0 && (
                       <View>
-                        <CamposDataHora
-                          value={when}
-                          onChange={setWhen}
-                          labelDate="Data "
-                          labelTime="Hora "
-                          is24Hour
-                        />
-                        <TextInput
-                          ref={tituloRef}
-                          onFocus={() => scrollToInput(tituloRef)}
-                          placeholder="Título"
-                          style={style.pesquisa}
-                          value={textoTitulo}
-                          placeholderTextColor={"black"}
-                          onChangeText={setTextoTitulo}
-                          returnKeyType="next"
-                        />
-                        <TextInput
-                          ref={sonhoRef}
-                          onFocus={() => scrollToInput(sonhoRef)}
-                          placeholder="Descreva seu sonho..."
-                          style={style.textarea}
-                          value={textoSonho}
-                          placeholderTextColor={"black"}
-                          onChangeText={setTextoSonho}
-                          multiline
-                        />
-                        <Pressable
-                          onPress={onInterpretarIA}
-                          disabled={iaLoading || !textoSonho.trim()}
-                          style={{
-                            backgroundColor: COLORS.verdeMenta,
-                            borderRadius: 10,
-                            paddingVertical: 12,
-                            alignItems: "center",
-                            opacity: iaLoading ? 0.7 : 1,
-                          }}
-                        >
-                          <Text style={{ fontWeight: "700", color: "#0f172a" }}>
-                            {iaLoading
-                              ? "Interpretando..."
-                              : "Interpretar sonho (IA) ✨"}
-                          </Text>
-                        </Pressable>
+                        <Text style={styles.sectionTitle}>Início</Text>
+                        <View style={{ gap: 12 }}>
+                          <CamposDataHora
+                            value={when}
+                            onChange={setWhen}
+                            labelDate="Data "
+                            labelTime="Hora "
+                            is24Hour
+                          />
+
+                          <TextInput
+                            ref={tituloRef}
+                            onFocus={() => scrollToInput(tituloRef)}
+                            placeholder="Título"
+                            style={style.pesquisa}
+                            value={textoTitulo}
+                            placeholderTextColor={"black"}
+                            onChangeText={setTextoTitulo}
+                            returnKeyType="next"
+                          />
+
+                          <TextInput
+                            ref={sonhoRef}
+                            onFocus={() => scrollToInput(sonhoRef)}
+                            placeholder="Descreva seu sonho..."
+                            style={style.textarea}
+                            value={textoSonho}
+                            placeholderTextColor={"black"}
+                            onChangeText={setTextoSonho}
+                            multiline
+                            numberOfLines={6}
+                            textAlignVertical="top"
+                          />
+
+                          {/* BOTÃO IA */}
+                          <Pressable
+                            onPress={onInterpretarIA}
+                            disabled={iaLoading || !textoSonho.trim()}
+                            style={({ pressed }) => [
+                              {
+                                backgroundColor: COLORS.verdeMenta,
+                                borderRadius: 10,
+                                paddingVertical: 12,
+                                alignItems: "center",
+                                opacity: iaLoading ? 0.7 : pressed ? 0.9 : 1,
+                              },
+                            ]}
+                          >
+                            <Text style={{ fontWeight: "700", color: "#0f172a" }}>
+                              {iaLoading
+                                ? "Interpretando..."
+                                : "Interpretar sonho (IA) ✨"}
+                            </Text>
+                          </Pressable>
+
+                          {iaLoading && <ActivityIndicator style={{ marginTop: 8 }} />}
+
+                          {/* CARD INTERPRETAÇÃO */}
+                          {interpretacao && (
+                            <View
+                              style={{
+                                marginTop: 10,
+                                backgroundColor: "rgba(255,255,255,0.9)",
+                                borderRadius: 10,
+                                padding: 12,
+                                borderWidth: 1,
+                                borderColor: "#e5e7eb",
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontWeight: "700",
+                                  color: COLORS.cinzaEscuro,
+                                  marginBottom: 6,
+                                }}
+                              >
+                                Interpretação
+                              </Text>
+                              <Text style={{ color: "#111827" }}>
+                                {interpretacao}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
                       </View>
                     )}
 
                     {step === 1 && (
                       <View>
+                        <Text style={styles.sectionTitle}>Humor</Text>
                         <HumorEmojiScale value={humor} onChange={setHumor} />
                       </View>
                     )}
 
                     {step === 2 && (
                       <View>
+                        <Text style={styles.sectionTitle}>Tipo de sonho</Text>
                         <TipoSonhoCheckbox value={tipo} onChange={setTipo} />
                       </View>
                     )}
@@ -503,10 +557,24 @@ export const style = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
-  stepPill: { flexDirection: "row", alignSelf: "center" },
-  stepItem: { padding: 6 },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.cinzaEscuro,
+    marginBottom: 8,
+  },
+  stepPill: {
+    flexDirection: "row",
+    alignSelf: "center",
+    backgroundColor: "rgba(255,255,255,0.85)",
+    padding: 6,
+    borderRadius: 999,
+    gap: 4,
+    marginBottom: 6,
+  },
+  stepItem: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999 },
   stepActive: { backgroundColor: COLORS.verdeMenta },
-  stepText: { fontSize: 13 },
+  stepText: { fontSize: 13, color: COLORS.cinzaEscuro, fontWeight: "600" },
   stepTextActive: { color: "#0f172a" },
   bottomBar: {
     position: "absolute",
