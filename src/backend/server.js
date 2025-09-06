@@ -199,7 +199,7 @@ Note: do not include lottery numbers.`;
     text += numeros;
 
     // opcional: loga o final para auditoria
-    console.log('[INTERP OK]', text.slice(-200));
+    console.log('[INTERP OK]', dream.trim());
 
     res.json({ interpretation: text });
   } catch (e) {
