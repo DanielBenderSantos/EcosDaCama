@@ -1,7 +1,9 @@
 // src/utils/ai.ts
+import { Alert, Platform } from "react-native";
 import Constants from "expo-constants";
 
 function getBaseUrl() {
+  
   const fromEnv = process.env.EXPO_PUBLIC_API_URL;
   // @ts-ignore (SDKs variam)
   const fromExtra =
@@ -16,7 +18,8 @@ function getBaseUrl() {
 
 export async function interpretarSonhoIA(dream: string): Promise<string> {
   const base = getBaseUrl();
-
+console.log("API BASE =", base);
+if (Platform.OS === "web") alert(`API: ${base}`);
   const r = await fetch(`${base}/interpret-dream`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
