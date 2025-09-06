@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const PORT = process.env.PORT || 3000;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const REQUEST_TIMEOUT_MS = Number(process.env.REQUEST_TIMEOUT_MS || 45000); // 45s
+const VERSION = "v-lucky-5-one-block";
 
 if (!OPENAI_API_KEY) {
   console.warn('[WARN] OPENAI_API_KEY não definida no .env');
@@ -101,12 +102,32 @@ function pickUnique(rng, count, maxInclusive) {
   return Array.from(set).sort((a, b) => a - b);
 }
 
-function formatNums(arr) {
-  return arr.join(', ');
+function pad2(n) { return String(n).padStart(2, '0'); }
+function formatNums(arr) { return arr.map(pad2).join(', '); }
+
+// ---------- Remove qualquer bloco "Números da sorte" que o modelo tenha escrito ----------
+function removeModelLuckyNumbersSection(text) {
+  if (!text) return text;
+
+  // Padrões comuns de título (pt/en) + possíveis formatos
+  const patterns = [
+    /(?:^|\n)[ \t]*(?:\d+\)|[#*•-])?[ \t]*N[uú]meros da sorte\b[\s\S]*/i,
+    /(?:^|\n)[ \t]*(?:\d+\)|[#*•-])?[ \t]*Lucky numbers\b[\s\S]*/i,
+    // às vezes o modelo usa linhas com loterias direto
+    /(?:^|\n)[ \t]*(Lotof[aá]cil|Mega-?Sena|Dia de Sorte)\b[\s\S]*/i,
+  ];
+
+  let cleaned = text;
+  for (const re of patterns) {
+    cleaned = cleaned.replace(re, ''); // remove tudo a partir do match
+  }
+
+  // remove espaços e linhas duplas extras no fim
+  return cleaned.trimEnd();
 }
 
 // ---------- health ----------
-app.get('/', (_req, res) => res.json({ ok: true, service: 'EcosDaCama Dream API' }));
+app.get('/', (_req, res) => res.json({ ok: true, service: 'EcosDaCama Dream API', version: VERSION }));
 
 // Preflight explícito (web)
 app.options('/interpret-dream', cors());
@@ -124,6 +145,7 @@ app.post('/interpret-dream', async (req, res) => {
         ? 'Você é um guia onírico. Ofereça interpretações simbólicas e possibilidades (não diagnósticos), de forma breve, acolhedora e clara.'
         : 'You are a dream guide. Offer symbolic, possibility-oriented interpretations (not clinical), briefly and clearly.';
 
+    // ⚠️ Agora o prompt pede só 4 itens. O item 5 (números) será sempre injetado pelo backend.
     const user =
       lang === 'pt'
         ? `Texto do sonho: """${dream.trim()}"""
@@ -132,14 +154,14 @@ Forneça:
 2) Temas centrais e emoções (breve).
 3) Duas perguntas de reflexão.
 4) Uma ação/ritual prático simples para hoje.
-5) Ao final, insira "Números da sorte" (Lotofácil, Mega-Sena, Dia de Sorte).`
+Observação: não inclua números de loteria.`
         : `Dream text: """${dream.trim()}"""
 Provide:
 1) Key symbols and possible meanings (bullets).
 2) Core themes & emotions (brief).
 3) Two reflection questions.
 4) One simple practical action/ritual for today.
-5) At the end, insert "Lucky numbers" (Lotofácil, Mega-Sena, Dia de Sorte).`;
+Note: do not include lottery numbers.`;
 
     const body = {
       model: 'gpt-4.1-mini',
@@ -152,15 +174,16 @@ Provide:
     };
 
     const data = await callOpenAI(body);
-    const output = extractOutputText(data);
+    const raw = extractOutputText(data);
 
-    let text = output || 'Não consegui interpretar agora.';
+    // remove qualquer "Números da sorte" que o modelo colocou
+    let text = removeModelLuckyNumbersSection(raw || 'Não consegui interpretar agora.');
 
-    // ---------- gera os números da sorte ----------
+    // ---------- gera os números da sorte (determinístico por texto) ----------
     const rng = rngFromText(dream.trim());
     const lotofacil = pickUnique(rng, 15, 25);
-    const megasena = pickUnique(rng, 6, 60);
-    const diaSorte = pickUnique(rng, 7, 31);
+    const megasena  = pickUnique(rng, 6, 60);
+    const diaSorte  = pickUnique(rng, 7, 31);
 
     const numeros = [
       '',
@@ -171,8 +194,12 @@ Provide:
       '   _Obs.: apenas diversão; sem garantia de resultados._',
     ].join('\n');
 
-    // concatena como 5º item
-    text += `\n${numeros}`;
+    // concatena como 5º item, garantindo quebra de linha
+    if (!text.endsWith('\n')) text += '\n';
+    text += numeros;
+
+    // opcional: loga o final para auditoria
+    console.log('[INTERP OK]', text.slice(-200));
 
     res.json({ interpretation: text });
   } catch (e) {
