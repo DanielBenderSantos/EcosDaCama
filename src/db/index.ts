@@ -1,5 +1,5 @@
 // db/index.ts
-import { CREATE_META, CREATE_SONHOS_TABLE, DB_NAME, INIT_SCHEMA_VERSION } from "./schema";
+import { CREATE_META, CREATE_SONHOS_TABLE, DB_NAME, INIT_SCHEMA_VERSION,runMigrations, } from "./schema";
 import type { DB } from "./types";
 import { createDB } from "./driver";
 
@@ -24,20 +24,18 @@ const toDB = (v: any) =>
   : typeof v === "object" && v !== null ? JSON.stringify(v)
   : v;
 
-export async function initDB(): Promise<DB> {
+export async function initDB() {
   if (!driver) {
     driver = await createDB(DB_NAME);
     try { await driver.exec("PRAGMA foreign_keys = ON"); } catch {}
 
     await driver.exec(CREATE_META);
     await driver.exec(INIT_SCHEMA_VERSION);
-    await driver.exec(CREATE_SONHOS_TABLE);
 
-    // 🔧 Migrações idempotentes
-    try { await driver.exec(`ALTER TABLE Sonhos ADD COLUMN when_at TEXT`); } catch {}
-    try { await driver.exec(`ALTER TABLE Sonhos ADD COLUMN interpretacao TEXT`); } catch {} // 👈 nova migração
+    // 🔧 chama migrações
+    await runMigrations(driver);
   }
-  return driver!;
+  return driver;
 }
 
 function getDBOrThrow(): DB {
