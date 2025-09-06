@@ -2,7 +2,7 @@
   "expo": {
     "name": "Ecos Da Cama",
     "slug": "EcosDaCama",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon-1024.png",
     "scheme": "ecosdacama",
