@@ -1,12 +1,12 @@
-// src/backend/server.js  (CommonJS)
+// src/backend/server.js
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const crypto = require('crypto');
 
-// ======= Config =======
 const PORT = process.env.PORT || 3000;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const REQUEST_TIMEOUT_MS = 15000; // 15s
+const REQUEST_TIMEOUT_MS = Number(process.env.REQUEST_TIMEOUT_MS || 45000); // 45s
 
 if (!OPENAI_API_KEY) {
   console.warn('[WARN] OPENAI_API_KEY não definida no .env');
@@ -16,27 +16,24 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
-// Helper: fetch com timeout
+// ---------- Utils: timeout ----------
 async function fetchWithTimeout(url, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
   const ctrl = new AbortController();
   const id = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const res = await fetch(url, { ...options, signal: ctrl.signal });
-    return res;
+    return await fetch(url, { ...options, signal: ctrl.signal });
   } finally {
     clearTimeout(id);
   }
 }
 
-// Helper: extrai texto da Responses API
+// ---------- Utils: extração de texto da Responses API ----------
 function extractOutputText(data) {
   try {
-    // Formato Responses API (modelo novo)
     if (data?.output && Array.isArray(data.output)) {
       const first = data.output[0];
       const part = first?.content?.find?.((c) => c?.type === 'output_text');
       if (part?.text) return part.text;
-      // fallback: concatena qualquer pedaço de texto
       const allText = first?.content
         ?.map((c) => (c?.text ? c.text : ''))
         ?.filter(Boolean)
@@ -44,17 +41,77 @@ function extractOutputText(data) {
         ?.trim();
       if (allText) return allText;
     }
-    // Fallbacks comuns (modelos/chat antigos)
     if (data?.output_text) return data.output_text;
     if (data?.choices?.[0]?.message?.content) return data.choices[0].message.content;
   } catch (_) {}
   return '';
 }
 
-// Rota simples de saúde
+// ---------- Utils: retry simples ----------
+async function callOpenAI(body) {
+  const headers = {
+    Authorization: `Bearer ${OPENAI_API_KEY}`,
+    'Content-Type': 'application/json',
+  };
+
+  let lastErr;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const r = await fetchWithTimeout('https://api.openai.com/v1/responses', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) {
+        const txt = await r.text().catch(() => '');
+        throw new Error(`OpenAI HTTP ${r.status} ${txt.slice(0, 300)}`);
+      }
+      return await r.json();
+    } catch (e) {
+      lastErr = e;
+      console.error(`[OpenAI] tentativa ${attempt} falhou:`, e?.message || e);
+      await new Promise(res => setTimeout(res, attempt * 800));
+    }
+  }
+  throw lastErr;
+}
+
+// ---------- Utils: Números da sorte (determinísticos por sonho) ----------
+function mulberry32(seed) {
+  return function() {
+    let t = (seed += 0x6D2B79F5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function rngFromText(text) {
+  const h = crypto.createHash('sha256').update(text).digest();
+  const seed = h.readUInt32BE(0); // 32 bits do hash
+  return mulberry32(seed);
+}
+
+function pickUnique(rng, count, maxInclusive) {
+  const set = new Set();
+  while (set.size < count) {
+    const v = Math.floor(rng() * maxInclusive) + 1; // 1..max
+    set.add(v);
+  }
+  return Array.from(set).sort((a, b) => a - b);
+}
+
+function formatNums(arr) {
+  return arr.join(', ');
+}
+
+// ---------- health ----------
 app.get('/', (_req, res) => res.json({ ok: true, service: 'EcosDaCama Dream API' }));
 
-// Interpretar sonho
+// Preflight explícito (web)
+app.options('/interpret-dream', cors());
+
+// ---------- rota principal ----------
 app.post('/interpret-dream', async (req, res) => {
   try {
     const { dream, lang = 'pt' } = req.body || {};
@@ -75,14 +132,14 @@ Forneça:
 2) Temas centrais e emoções (breve).
 3) Duas perguntas de reflexão.
 4) Uma ação/ritual prático simples para hoje.
-Observação: interpretação, não diagnóstico.`
+5) Ao final, insira "Números da sorte" (Lotofácil, Mega-Sena, Dia de Sorte).`
         : `Dream text: """${dream.trim()}"""
 Provide:
 1) Key symbols and possible meanings (bullets).
 2) Core themes & emotions (brief).
 3) Two reflection questions.
 4) One simple practical action/ritual for today.
-Reminder: interpretation, not diagnosis.`;
+5) At the end, insert "Lucky numbers" (Lotofácil, Mega-Sena, Dia de Sorte).`;
 
     const body = {
       model: 'gpt-4.1-mini',
@@ -94,30 +151,30 @@ Reminder: interpretation, not diagnosis.`;
       temperature: 0.7,
     };
 
-    const r = await fetchWithTimeout('https://api.openai.com/v1/responses', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (!r.ok) {
-      const txt = await r.text().catch(() => '');
-      console.error('[OpenAI] HTTP', r.status, txt?.slice?.(0, 300));
-      return res.status(r.status).json({ error: 'Falha na API de IA', detail: txt?.slice?.(0, 300) });
-    }
-
-    const data = await r.json();
+    const data = await callOpenAI(body);
     const output = extractOutputText(data);
 
-    if (!output) {
-      console.error('[OpenAI] Sem texto extraído. Payload curto:', JSON.stringify(data).slice(0, 500));
-      return res.json({ interpretation: 'Não consegui interpretar agora.' });
-    }
+    let text = output || 'Não consegui interpretar agora.';
 
-    res.json({ interpretation: output });
+    // ---------- gera os números da sorte ----------
+    const rng = rngFromText(dream.trim());
+    const lotofacil = pickUnique(rng, 15, 25);
+    const megasena = pickUnique(rng, 6, 60);
+    const diaSorte = pickUnique(rng, 7, 31);
+
+    const numeros = [
+      '',
+      '5) 🔢 Números da sorte (entretenimento):',
+      `   • Lotofácil (15/25): ${formatNums(lotofacil)}`,
+      `   • Mega-Sena (6/60): ${formatNums(megasena)}`,
+      `   • Dia de Sorte (7/31): ${formatNums(diaSorte)}`,
+      '   _Obs.: apenas diversão; sem garantia de resultados._',
+    ].join('\n');
+
+    // concatena como 5º item
+    text += `\n${numeros}`;
+
+    res.json({ interpretation: text });
   } catch (e) {
     const isAbort = e?.name === 'AbortError';
     console.error(isAbort ? '[Timeout]' : '[Server error]', e?.message || e);

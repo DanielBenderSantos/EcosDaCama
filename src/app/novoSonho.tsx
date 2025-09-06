@@ -1,4 +1,15 @@
-import { View, Text, Alert, Platform, ScrollView, StyleSheet, Dimensions, TextInput, Pressable, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  TextInput,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
 import React, { useEffect, useMemo, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
@@ -47,16 +58,17 @@ function ActionButton({
         { backgroundColor: bg, opacity: disabled ? 0.6 : pressed ? 0.9 : 1 },
       ]}
     >
-      <Text style={{ color: fg, fontWeight: "700", fontSize: 16 }}>
-        {label}
-      </Text>
+      <Text style={{ color: fg, fontWeight: "700", fontSize: 16 }}>{label}</Text>
     </Pressable>
   );
 }
 
 export default function NovoSonho() {
   const params = useLocalSearchParams<{ id?: string }>();
-  const editingId = useMemo(() => (params?.id ? Number(params.id) : undefined), [params?.id]);
+  const editingId = useMemo(
+    () => (params?.id ? Number(params.id) : undefined),
+    [params?.id]
+  );
 
   const [when, setWhen] = useState(new Date());
   const [tipo, setTipo] = useState<TipoSonhoId | null>(null);
@@ -66,7 +78,9 @@ export default function NovoSonho() {
   const [loading, setLoading] = useState(false);
 
   // IA
-  const [interpretacao, setInterpretacao] = useState<string | null>(null);
+  const [interpretacao, setInterpretacao] = useState<string | undefined>(
+    undefined
+  );
   const [iaLoading, setIaLoading] = useState(false);
 
   // Humor 1..5
@@ -77,7 +91,11 @@ export default function NovoSonho() {
 
   useEffect(() => {
     (async () => {
-      try { await initDB(); } catch (e) { console.error("[DB] init:", e); }
+      try {
+        await initDB();
+      } catch (e) {
+        console.error("[DB] init:", e);
+      }
     })();
   }, []);
 
@@ -95,7 +113,8 @@ export default function NovoSonho() {
         }
         setTextoTitulo(s.titulo ?? "");
         setTextoSonho(s.sonho ?? "");
-        setTipo(dbTipoToUiTipo(s.tipo));
+        // 👇 aqui usamos ?? undefined
+        setTipo(dbTipoToUiTipo(s.tipo ?? undefined));
         if (typeof s.humor === "number") {
           setHumor(Math.min(5, Math.max(1, s.humor)) as HumorScore);
         }
@@ -103,9 +122,8 @@ export default function NovoSonho() {
           const d = new Date(s.when_at);
           if (!isNaN(d.getTime())) setWhen(d);
         }
-        if (s as any && (s as any).interpretacao) {
-          setInterpretacao((s as any).interpretacao);
-        }
+        // 👇 aqui também
+        setInterpretacao(s.interpretacao ?? undefined);
       } catch (e) {
         console.error(e);
         alertWebMobile("Falha ao carregar o sonho.");
@@ -115,17 +133,23 @@ export default function NovoSonho() {
     })();
   }, [editingId]);
 
-  function handleBack() { router.back(); }
+  function handleBack() {
+    router.back();
+  }
 
-  function normalizeTipo(t: TipoSonhoId): "normal" | "lúcido" | "pesadelo" | "recorrente" {
+  function normalizeTipo(
+    t: TipoSonhoId
+  ): "normal" | "lúcido" | "pesadelo" | "recorrente" {
     const m = (t || "").toString().toLowerCase();
     if (m === "lucido") return "lúcido";
     if (m === "pesadelo") return "pesadelo";
     if (m === "recorrente") return "recorrente";
     return "normal";
   }
-  function dbTipoToUiTipo(t?: string): TipoSonhoId | null {
-    const m = (t || "").toLowerCase();
+
+  // 👇 agora aceita string | null | undefined
+  function dbTipoToUiTipo(t?: string | null): TipoSonhoId | null {
+    const m = (t ?? "").toLowerCase();
     if (m === "lúcido" || m === "lucido") return "lucido";
     if (m === "pesadelo") return "pesadelo";
     if (m === "recorrente") return "recorrente";
@@ -139,19 +163,20 @@ export default function NovoSonho() {
       await initDB();
 
       if (!textoTitulo.trim()) return alertWebMobile("Informe um título.");
-      if (!textoSonho.trim())  return alertWebMobile("Descreva o sonho.");
-      if (humor == null)       return alertWebMobile("Escolha como foi o sonho (humor).");
-      if (!tipo)               return alertWebMobile("Selecione o tipo do sonho.");
+      if (!textoSonho.trim()) return alertWebMobile("Descreva o sonho.");
+      if (humor == null)
+        return alertWebMobile("Escolha como foi o sonho (humor).");
+      if (!tipo) return alertWebMobile("Selecione o tipo do sonho.");
 
       setSaving(true);
 
-      const payload: Omit<Sonho, "id"> & { interpretacao?: string | null } = {
+      const payload: Omit<Sonho, "id"> = {
         titulo: textoTitulo.trim(),
         sonho: textoSonho.trim(),
         tipo: normalizeTipo(tipo),
         humor,
         when_at: when.toISOString(),
-        interpretacao: interpretacao ?? null,
+        interpretacao: interpretacao ?? undefined,
       };
 
       if (editingId) {
@@ -164,7 +189,7 @@ export default function NovoSonho() {
         setTextoSonho("");
         setTipo(null);
         setHumor(null);
-        setInterpretacao(null);
+        setInterpretacao(undefined);
       }
 
       router.back();
@@ -177,10 +202,17 @@ export default function NovoSonho() {
   };
 
   const nextFromStep = async () => {
-    if (step === 0) { setStep(1); return; }
+    if (step === 0) {
+      setStep(1);
+      return;
+    }
     if (step === 1) {
-      if (humor == null) { alertWebMobile("Escolha como foi o sonho (humor) para continuar."); return; }
-      setStep(2); return;
+      if (humor == null) {
+        alertWebMobile("Escolha como foi o sonho (humor) para continuar.");
+        return;
+      }
+      setStep(2);
+      return;
     }
     await salvar();
   };
@@ -193,13 +225,16 @@ export default function NovoSonho() {
 
   async function onInterpretarIA() {
     try {
-      if (!textoSonho.trim()) { alertWebMobile("Descreva o sonho antes de interpretar."); return; }
+      if (!textoSonho.trim()) {
+        alertWebMobile("Descreva o sonho antes de interpretar.");
+        return;
+      }
       setIaLoading(true);
       const txt = await interpretarSonhoIA(textoSonho.trim());
       setInterpretacao(txt);
       alertWebMobile("Interpretação gerada!");
     } catch (e: any) {
-      console.error(e);
+      console.error("Falha interpretar:", e);
       alertWebMobile(`Não foi possível interpretar agora. ${e?.message ?? ""}`);
     } finally {
       setIaLoading(false);
@@ -208,14 +243,29 @@ export default function NovoSonho() {
 
   const StepPill = () => (
     <View style={styles.stepPill}>
-      <Pressable onPress={() => setStep(0)} style={[styles.stepItem, step === 0 && styles.stepActive]}>
-        <Text style={[styles.stepText, step === 0 && styles.stepTextActive]}>Início</Text>
+      <Pressable
+        onPress={() => setStep(0)}
+        style={[styles.stepItem, step === 0 && styles.stepActive]}
+      >
+        <Text style={[styles.stepText, step === 0 && styles.stepTextActive]}>
+          Início
+        </Text>
       </Pressable>
-      <Pressable onPress={() => setStep(1)} style={[styles.stepItem, step === 1 && styles.stepActive]}>
-        <Text style={[styles.stepText, step === 1 && styles.stepTextActive]}>Humor</Text>
+      <Pressable
+        onPress={() => setStep(1)}
+        style={[styles.stepItem, step === 1 && styles.stepActive]}
+      >
+        <Text style={[styles.stepText, step === 1 && styles.stepTextActive]}>
+          Humor
+        </Text>
       </Pressable>
-      <Pressable onPress={() => setStep(2)} style={[styles.stepItem, step === 2 && styles.stepActive]}>
-        <Text style={[styles.stepText, step === 2 && styles.stepTextActive]}>Tipo</Text>
+      <Pressable
+        onPress={() => setStep(2)}
+        style={[styles.stepItem, step === 2 && styles.stepActive]}
+      >
+        <Text style={[styles.stepText, step === 2 && styles.stepTextActive]}>
+          Tipo
+        </Text>
       </Pressable>
     </View>
   );
@@ -223,11 +273,15 @@ export default function NovoSonho() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" translucent={false} backgroundColor="#fff" />
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }} edges={["top", "left", "right"]}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: "#fff" }}
+        edges={["top", "left", "right"]}
+      >
         <LinearGradient
           colors={["#7c74c4ff", "#f0c1b4ff"]}
           style={{ flex: 1, justifyContent: "center" }}
-          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         >
           <View style={{ alignItems: "center", justifyContent: "center" }}>
             <View
@@ -242,8 +296,20 @@ export default function NovoSonho() {
               ]}
             >
               {/* TOP BAR */}
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", height: 42 }}>
-                <FontAwesome onPress={handleBack} name="arrow-left" size={32} color="black" />
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  height: 42,
+                }}
+              >
+                <FontAwesome
+                  onPress={handleBack}
+                  name="arrow-left"
+                  size={32}
+                  color="black"
+                />
               </View>
 
               {/* TÍTULO */}
@@ -264,7 +330,13 @@ export default function NovoSonho() {
                   <View>
                     <Text style={styles.sectionTitle}>Início</Text>
                     <View style={{ gap: 12 }}>
-                      <CamposDataHora value={when} onChange={setWhen} labelDate="Data " labelTime="Hora " is24Hour />
+                      <CamposDataHora
+                        value={when}
+                        onChange={setWhen}
+                        labelDate="Data "
+                        labelTime="Hora "
+                        is24Hour
+                      />
                       <TextInput
                         placeholder="Título"
                         style={style.pesquisa}
@@ -283,7 +355,7 @@ export default function NovoSonho() {
                         style={style.textarea}
                       />
 
-                      {/* BOTÃO IA + LOADING */}
+                      {/* BOTÃO IA */}
                       <Pressable
                         onPress={onInterpretarIA}
                         disabled={iaLoading || !textoSonho.trim()}
@@ -298,26 +370,38 @@ export default function NovoSonho() {
                         ]}
                       >
                         <Text style={{ fontWeight: "700", color: "#0f172a" }}>
-                          {iaLoading ? "Interpretando..." : "Interpretar sonho (IA) ✨"}
+                          {iaLoading
+                            ? "Interpretando..."
+                            : "Interpretar sonho (IA) ✨"}
                         </Text>
                       </Pressable>
 
                       {iaLoading && <ActivityIndicator style={{ marginTop: 8 }} />}
 
-                      {/* CARD DA INTERPRETAÇÃO */}
+                      {/* CARD INTERPRETAÇÃO */}
                       {interpretacao && (
-                        <View style={{
-                          marginTop: 10,
-                          backgroundColor: "rgba(255,255,255,0.9)",
-                          borderRadius: 10,
-                          padding: 12,
-                          borderWidth: 1,
-                          borderColor: "#e5e7eb"
-                        }}>
-                          <Text style={{ fontWeight: "700", color: COLORS.cinzaEscuro, marginBottom: 6 }}>
+                        <View
+                          style={{
+                            marginTop: 10,
+                            backgroundColor: "rgba(255,255,255,0.9)",
+                            borderRadius: 10,
+                            padding: 12,
+                            borderWidth: 1,
+                            borderColor: "#e5e7eb",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontWeight: "700",
+                              color: COLORS.cinzaEscuro,
+                              marginBottom: 6,
+                            }}
+                          >
                             Interpretação
                           </Text>
-                          <Text style={{ color: "#111827" }}>{interpretacao}</Text>
+                          <Text style={{ color: "#111827" }}>
+                            {interpretacao}
+                          </Text>
                         </View>
                       )}
                     </View>
@@ -328,7 +412,9 @@ export default function NovoSonho() {
                   <View>
                     <Text style={styles.sectionTitle}>Humor</Text>
                     <HumorEmojiScale value={humor} onChange={setHumor} />
-                    {humor == null && <Text style={styles.helperText}>Escolha uma opção.</Text>}
+                    {humor == null && (
+                      <Text style={styles.helperText}>Escolha uma opção.</Text>
+                    )}
                   </View>
                 )}
 
@@ -336,7 +422,11 @@ export default function NovoSonho() {
                   <View>
                     <Text style={styles.sectionTitle}>Tipo de sonho</Text>
                     <TipoSonhoCheckbox value={tipo} onChange={setTipo} />
-                    {!tipo && <Text style={styles.helperText}>Selecione um tipo para continuar.</Text>}
+                    {!tipo && (
+                      <Text style={styles.helperText}>
+                        Selecione um tipo para continuar.
+                      </Text>
+                    )}
                   </View>
                 )}
               </ScrollView>
@@ -353,11 +443,18 @@ export default function NovoSonho() {
                   label={
                     step < 2
                       ? "Próximo"
-                      : (saving ? (editingId ? "Atualizando..." : "Salvando...") : (editingId ? "Atualizar" : "Salvar"))
+                      : saving
+                      ? editingId
+                        ? "Atualizando..."
+                        : "Salvando..."
+                      : editingId
+                      ? "Atualizar"
+                      : "Salvar"
                   }
                   onPress={nextFromStep}
                   disabled={
-                    loading || saving ||
+                    loading ||
+                    saving ||
                     (step === 1 && humor == null) ||
                     (step === 2 && !tipo)
                   }
@@ -378,19 +475,83 @@ function alertWebMobile(msg: string) {
 }
 
 export const style = StyleSheet.create({
-  card: { backgroundColor: "#fff", padding: 20, borderRadius: 10, shadowOpacity: 0.25, shadowRadius: 3.84, gap: 15 },
-  textarea: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, minHeight: 100, fontSize: 16, backgroundColor: "#fff" },
-  pesquisa: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, fontSize: 16, backgroundColor: "#fff" },
+  card: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    gap: 15,
+  },
+  textarea: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 10,
+    minHeight: 100,
+    fontSize: 16,
+    backgroundColor: "#fff",
+  },
+  pesquisa: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+    backgroundColor: "#fff",
+  },
 });
 
 const styles = StyleSheet.create({
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: COLORS.cinzaEscuro, marginBottom: 8 },
-  helperText: { marginTop: 6, fontSize: 12, color: COLORS.cinzaEscuro },
-  stepPill: { flexDirection: "row", alignSelf: "center", backgroundColor: "rgba(255,255,255,0.85)", padding: 6, borderRadius: 999, gap: 4, marginBottom: 6 },
-  stepItem: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999 },
-  stepActive: { backgroundColor: COLORS.verdeMenta },
-  stepText: { fontSize: 13, color: COLORS.cinzaEscuro, fontWeight: "600" },
-  stepTextActive: { color: "#0f172a" },
-  bottomBar: { position: "absolute", left: 16, right: 16, bottom: 16, flexDirection: "row", gap: 12 },
-  actionBtn: { flex: 1, borderRadius: 12, paddingVertical: 14, alignItems: "center", justifyContent: "center" },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.cinzaEscuro,
+    marginBottom: 8,
+  },
+  helperText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: COLORS.cinzaEscuro,
+  },
+  stepPill: {
+    flexDirection: "row",
+    alignSelf: "center",
+    backgroundColor: "rgba(255,255,255,0.85)",
+    padding: 6,
+    borderRadius: 999,
+    gap: 4,
+    marginBottom: 6,
+  },
+  stepItem: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+  },
+  stepActive: {
+    backgroundColor: COLORS.verdeMenta,
+  },
+  stepText: {
+    fontSize: 13,
+    color: COLORS.cinzaEscuro,
+    fontWeight: "600",
+  },
+  stepTextActive: {
+    color: "#0f172a",
+  },
+  bottomBar: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    bottom: 16,
+    flexDirection: "row",
+    gap: 12,
+  },
+  actionBtn: {
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });

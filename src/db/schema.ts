@@ -22,5 +22,6 @@ CREATE TABLE IF NOT EXISTS Sonhos (
   tipo     TEXT    NOT NULL,   -- 'normal' | 'lúcido' | 'pesadelo' | 'recorrente'
   humor    INTEGER,            -- 1..5 (1=ótimo, 5=péssimo) - opcional
   when_at  TEXT                -- ISO string
+  interpretacao TEXT   
 );
 `;

@@ -1,9 +1,28 @@
-// db.ts
+// db/index.ts
 import { CREATE_META, CREATE_SONHOS_TABLE, DB_NAME, INIT_SCHEMA_VERSION } from "./schema";
 import type { DB } from "./types";
-import { createDB } from "./driver"; // 👈 estático por plataforma
+import { createDB } from "./driver";
 
 let driver: DB | null = null;
+
+export type Sonho = {
+  id?: number;
+  titulo: string;
+  sonho: string;
+  tipo?: string | null;
+  humor?: number | null;
+  when_at?: string | null;
+  interpretacao?: string | null;     // 👈 novo campo
+};
+
+// Normaliza tipos para o SQLite (evita undefined no prepare/bind)
+const toDB = (v: any) =>
+  v === undefined ? null
+  : v === true ? 1
+  : v === false ? 0
+  : v instanceof Date ? v.toISOString()
+  : typeof v === "object" && v !== null ? JSON.stringify(v)
+  : v;
 
 export async function initDB(): Promise<DB> {
   if (!driver) {
@@ -14,121 +33,55 @@ export async function initDB(): Promise<DB> {
     await driver.exec(INIT_SCHEMA_VERSION);
     await driver.exec(CREATE_SONHOS_TABLE);
 
-    // 🔧 Migrações idempotentes (seguras se você NÃO reinstalar, mas ok manter)
-    // garantir coluna when_at (se vier de um DB antigo sem ela)
+    // 🔧 Migrações idempotentes
     try { await driver.exec(`ALTER TABLE Sonhos ADD COLUMN when_at TEXT`); } catch {}
-    // garantir coluna humor (se vier de um DB antigo)
-    try { await driver.exec(`ALTER TABLE Sonhos ADD COLUMN humor INTEGER`); } catch {}
-    // ⚠️ Não há mais "sentimentos" no schema novo.
-  // após outras migrações...
-try {
-  await driver.exec(`ALTER TABLE Sonhos ADD COLUMN interpretacao TEXT`);
-} catch { /* já existe */ }
+    try { await driver.exec(`ALTER TABLE Sonhos ADD COLUMN interpretacao TEXT`); } catch {} // 👈 nova migração
   }
-  
-  return driver;
+  return driver!;
 }
 
 function getDBOrThrow(): DB {
   if (!driver) throw new Error("DB não inicializado. Chame initDB() antes.");
-  return driver;
+  return driver!;
 }
 
-// ===== Tipos de domínio =====
-
-export interface Sonho {
-  id?: number;
-  titulo: string;
-  sonho: string;
-  tipo: "normal" | "lúcido" | "pesadelo" | "recorrente";
-  humor?: number | null;  // 1..5 (1=ótimo, 5=péssimo)
-  when_at?: string;       // ISO (Date.toISOString())
-}
-
-// ===== CRUD =====
-
-export async function addSonho(data: Omit<Sonho, "id">): Promise<void> {
+// CRUD
+export async function addSonho(s: Omit<Sonho, "id">) {
   const db = getDBOrThrow();
-  await db.exec(
-    `INSERT INTO Sonhos (titulo, sonho, tipo, humor, when_at) VALUES (?, ?, ?, ?, ?)`,
-    [
-      data.titulo,
-      data.sonho,
-      data.tipo,
-      data.humor ?? null,
-      data.when_at ?? null,
-    ]
-  );
+  const sql = `INSERT INTO Sonhos (titulo, sonho, tipo, humor, when_at, interpretacao)
+               VALUES (?,?,?,?,?,?)`;
+  const params = [
+    s.titulo, s.sonho, s.tipo ?? null, s.humor ?? null, s.when_at ?? null, s.interpretacao ?? null
+  ].map(toDB);
+  // use o método de parâmetros do seu driver (runAsync/execute/etc.)
+  // @ts-ignore
+  return await db.runAsync?.(sql, params) ?? await db.exec(sql, params as any);
+}
+
+export async function updateSonho(id: number, s: Omit<Sonho, "id">) {
+  const db = getDBOrThrow();
+  const sql = `UPDATE Sonhos
+                 SET titulo=?, sonho=?, tipo=?, humor=?, when_at=?, interpretacao=?
+               WHERE id=?`;
+  const params = [
+    s.titulo, s.sonho, s.tipo ?? null, s.humor ?? null, s.when_at ?? null, s.interpretacao ?? null, id
+  ].map(toDB);
+  // @ts-ignore
+  return await db.runAsync?.(sql, params) ?? await db.exec(sql, params as any);
+}
+
+export async function getSonho(id: number): Promise<Sonho | null> {
+  const db = getDBOrThrow();
+  const sql = `SELECT id, titulo, sonho, tipo, humor, when_at, interpretacao FROM Sonhos WHERE id=? LIMIT 1`;
+  const rows = // @ts-ignore
+    await db.getAllAsync?.(sql, [id]) ?? await db.select?.(sql, [id]) ?? [];
+  return (rows && rows[0]) || null;
 }
 
 export async function listSonhos(): Promise<Sonho[]> {
   const db = getDBOrThrow();
-  const rows = await db.getAll<{
-    id: number;
-    titulo: string;
-    sonho: string;
-    tipo: string;
-    humor: number | null;
-    when_at: string | null;
-  }>(
-    `SELECT id, titulo, sonho, tipo, humor, when_at
-     FROM Sonhos
-     ORDER BY id DESC`
-  );
-  return rows.map(r => ({
-    id: r.id,
-    titulo: r.titulo,
-    sonho: r.sonho,
-    tipo: r.tipo as Sonho["tipo"],
-    humor: r.humor ?? null,
-    when_at: r.when_at ?? undefined,
-  }));
-}
-
-export async function getSonho(id: number): Promise<Sonho | undefined> {
-  const db = getDBOrThrow();
-  const r = await db.getOne<{
-    id: number;
-    titulo: string;
-    sonho: string;
-    tipo: string;
-    humor: number | null;
-    when_at: string | null;
-  }>(
-    `SELECT id, titulo, sonho, tipo, humor, when_at
-     FROM Sonhos
-     WHERE id = ?`,
-    [id]
-  );
-  if (!r) return undefined;
-  return {
-    id: r.id,
-    titulo: r.titulo,
-    sonho: r.sonho,
-    tipo: r.tipo as Sonho["tipo"],
-    humor: r.humor ?? null,
-    when_at: r.when_at ?? undefined,
-  };
-}
-
-export async function updateSonho(id: number, patch: Partial<Omit<Sonho, "id">>): Promise<void> {
-  const db = getDBOrThrow();
-  const sets: string[] = [];
-  const vals: any[] = [];
-
-  if (patch.titulo !== undefined)  { sets.push("titulo = ?");  vals.push(patch.titulo); }
-  if (patch.sonho !== undefined)   { sets.push("sonho = ?");   vals.push(patch.sonho); }
-  if (patch.tipo !== undefined)    { sets.push("tipo = ?");    vals.push(patch.tipo); }
-  if (patch.humor !== undefined)   { sets.push("humor = ?");   vals.push(patch.humor); }
-  if (patch.when_at !== undefined) { sets.push("when_at = ?"); vals.push(patch.when_at); }
-
-  if (!sets.length) return;
-  vals.push(id);
-
-  await db.exec(`UPDATE Sonhos SET ${sets.join(", ")} WHERE id = ?`, vals);
-}
-
-export async function deleteSonho(id: number): Promise<void> {
-  const db = getDBOrThrow();
-  await db.exec(`DELETE FROM Sonhos WHERE id = ?`, [id]);
+  const sql = `SELECT id, titulo, sonho, tipo, humor, when_at, interpretacao FROM Sonhos ORDER BY when_at DESC, id DESC`;
+  const rows = // @ts-ignore
+    await db.getAllAsync?.(sql, []) ?? await db.select?.(sql, []) ?? [];
+  return rows as Sonho[];
 }
