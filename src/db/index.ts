@@ -20,7 +20,12 @@ export async function initDB(): Promise<DB> {
     // garantir coluna humor (se vier de um DB antigo)
     try { await driver.exec(`ALTER TABLE Sonhos ADD COLUMN humor INTEGER`); } catch {}
     // ⚠️ Não há mais "sentimentos" no schema novo.
+  // após outras migrações...
+try {
+  await driver.exec(`ALTER TABLE Sonhos ADD COLUMN interpretacao TEXT`);
+} catch { /* já existe */ }
   }
+  
   return driver;
 }
 

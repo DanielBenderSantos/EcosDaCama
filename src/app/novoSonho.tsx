@@ -1,4 +1,4 @@
-import { View, Text, Alert, Platform, ScrollView, StyleSheet, Dimensions, TextInput, Pressable } from "react-native";
+import { View, Text, Alert, Platform, ScrollView, StyleSheet, Dimensions, TextInput, Pressable, ActivityIndicator } from "react-native";
 import React, { useEffect, useMemo, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
@@ -8,10 +8,10 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import CamposDataHora from "@/components/camposDataHora";
 import TipoSonhoCheckbox, { TipoSonhoId } from "@/components/tipoSonho";
-// ⬇️ Componente (emoji+cor), sem exibir números
 import HumorEmojiScale, { HumorScore } from "@/components/humorEmojiScale";
+import { interpretarSonhoIA } from "@/utils/ai";
 
-// DB — ajuste o caminho se for diferente
+// DB
 import { initDB, addSonho, getSonho, updateSonho, type Sonho } from "@/db";
 
 const COLORS = {
@@ -24,7 +24,6 @@ const COLORS = {
   branco: "#ffffff",
 };
 
-/** Botão local simples para a barra fixa */
 function ActionButton({
   label,
   onPress,
@@ -66,13 +65,21 @@ export default function NovoSonho() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Humor 1..5 (sem exibir números para o usuário)
+  // IA
+  const [interpretacao, setInterpretacao] = useState<string | null>(null);
+  const [iaLoading, setIaLoading] = useState(false);
+
+  // Humor 1..5
   const [humor, setHumor] = useState<HumorScore | null>(null);
 
   // 0 = INÍCIO | 1 = HUMOR | 2 = TIPO
   const [step, setStep] = useState<0 | 1 | 2>(0);
 
-  useEffect(() => { (async () => { try { await initDB(); } catch (e) { console.error("[DB] init:", e); } })(); }, []);
+  useEffect(() => {
+    (async () => {
+      try { await initDB(); } catch (e) { console.error("[DB] init:", e); }
+    })();
+  }, []);
 
   useEffect(() => {
     if (!editingId) return;
@@ -89,15 +96,15 @@ export default function NovoSonho() {
         setTextoTitulo(s.titulo ?? "");
         setTextoSonho(s.sonho ?? "");
         setTipo(dbTipoToUiTipo(s.tipo));
-
-        // carrega humor salvo (se existir)
         if (typeof s.humor === "number") {
           setHumor(Math.min(5, Math.max(1, s.humor)) as HumorScore);
         }
-
         if (s.when_at) {
           const d = new Date(s.when_at);
           if (!isNaN(d.getTime())) setWhen(d);
+        }
+        if (s as any && (s as any).interpretacao) {
+          setInterpretacao((s as any).interpretacao);
         }
       } catch (e) {
         console.error(e);
@@ -129,7 +136,6 @@ export default function NovoSonho() {
   const salvar = async () => {
     try {
       if (saving) return;
-
       await initDB();
 
       if (!textoTitulo.trim()) return alertWebMobile("Informe um título.");
@@ -139,12 +145,13 @@ export default function NovoSonho() {
 
       setSaving(true);
 
-      const payload: Omit<Sonho, "id"> = {
+      const payload: Omit<Sonho, "id"> & { interpretacao?: string | null } = {
         titulo: textoTitulo.trim(),
         sonho: textoSonho.trim(),
         tipo: normalizeTipo(tipo),
-        humor, // salva o humor (1..5)
+        humor,
         when_at: when.toISOString(),
+        interpretacao: interpretacao ?? null,
       };
 
       if (editingId) {
@@ -157,6 +164,7 @@ export default function NovoSonho() {
         setTextoSonho("");
         setTipo(null);
         setHumor(null);
+        setInterpretacao(null);
       }
 
       router.back();
@@ -169,17 +177,10 @@ export default function NovoSonho() {
   };
 
   const nextFromStep = async () => {
-    if (step === 0) {
-      setStep(1);
-      return;
-    }
+    if (step === 0) { setStep(1); return; }
     if (step === 1) {
-      if (humor == null) {
-        alertWebMobile("Escolha como foi o sonho (humor) para continuar.");
-        return;
-      }
-      setStep(2);
-      return;
+      if (humor == null) { alertWebMobile("Escolha como foi o sonho (humor) para continuar."); return; }
+      setStep(2); return;
     }
     await salvar();
   };
@@ -189,6 +190,21 @@ export default function NovoSonho() {
     if (step === 1) return setStep(0);
     handleBack();
   };
+
+  async function onInterpretarIA() {
+    try {
+      if (!textoSonho.trim()) { alertWebMobile("Descreva o sonho antes de interpretar."); return; }
+      setIaLoading(true);
+      const txt = await interpretarSonhoIA(textoSonho.trim());
+      setInterpretacao(txt);
+      alertWebMobile("Interpretação gerada!");
+    } catch (e: any) {
+      console.error(e);
+      alertWebMobile(`Não foi possível interpretar agora. ${e?.message ?? ""}`);
+    } finally {
+      setIaLoading(false);
+    }
+  }
 
   const StepPill = () => (
     <View style={styles.stepPill}>
@@ -238,10 +254,10 @@ export default function NovoSonho() {
               {/* PILLS DE ETAPAS */}
               <StepPill />
 
-              {/* CONTEÚDO — UMA SEÇÃO POR VEZ */}
+              {/* CONTEÚDO */}
               <ScrollView
                 style={{ flex: 1 }}
-                contentContainerStyle={{ padding: 12, paddingBottom: 120 }}
+                contentContainerStyle={{ padding: 12, paddingBottom: 160 }}
                 showsVerticalScrollIndicator
               >
                 {step === 0 && (
@@ -266,6 +282,44 @@ export default function NovoSonho() {
                         textAlignVertical="top"
                         style={style.textarea}
                       />
+
+                      {/* BOTÃO IA + LOADING */}
+                      <Pressable
+                        onPress={onInterpretarIA}
+                        disabled={iaLoading || !textoSonho.trim()}
+                        style={({ pressed }) => [
+                          {
+                            backgroundColor: COLORS.verdeMenta,
+                            borderRadius: 10,
+                            paddingVertical: 12,
+                            alignItems: "center",
+                            opacity: iaLoading ? 0.7 : pressed ? 0.9 : 1,
+                          },
+                        ]}
+                      >
+                        <Text style={{ fontWeight: "700", color: "#0f172a" }}>
+                          {iaLoading ? "Interpretando..." : "Interpretar sonho (IA) ✨"}
+                        </Text>
+                      </Pressable>
+
+                      {iaLoading && <ActivityIndicator style={{ marginTop: 8 }} />}
+
+                      {/* CARD DA INTERPRETAÇÃO */}
+                      {interpretacao && (
+                        <View style={{
+                          marginTop: 10,
+                          backgroundColor: "rgba(255,255,255,0.9)",
+                          borderRadius: 10,
+                          padding: 12,
+                          borderWidth: 1,
+                          borderColor: "#e5e7eb"
+                        }}>
+                          <Text style={{ fontWeight: "700", color: COLORS.cinzaEscuro, marginBottom: 6 }}>
+                            Interpretação
+                          </Text>
+                          <Text style={{ color: "#111827" }}>{interpretacao}</Text>
+                        </View>
+                      )}
                     </View>
                   </View>
                 )}
@@ -330,55 +384,13 @@ export const style = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: COLORS.cinzaEscuro,
-    marginBottom: 8,
-  },
-  helperText: {
-    marginTop: 6,
-    fontSize: 12,
-    color: COLORS.cinzaEscuro,
-  },
-  stepPill: {
-    flexDirection: "row",
-    alignSelf: "center",
-    backgroundColor: "rgba(255,255,255,0.85)",
-    padding: 6,
-    borderRadius: 999,
-    gap: 4,
-    marginBottom: 6,
-  },
-  stepItem: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-  },
-  stepActive: {
-    backgroundColor: COLORS.verdeMenta,
-  },
-  stepText: {
-    fontSize: 13,
-    color: COLORS.cinzaEscuro,
-    fontWeight: "600",
-  },
-  stepTextActive: {
-    color: "#0f172a",
-  },
-  bottomBar: {
-    position: "absolute",
-    left: 16,
-    right: 16,
-    bottom: 16,
-    flexDirection: "row",
-    gap: 12,
-  },
-  actionBtn: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  sectionTitle: { fontSize: 18, fontWeight: "700", color: COLORS.cinzaEscuro, marginBottom: 8 },
+  helperText: { marginTop: 6, fontSize: 12, color: COLORS.cinzaEscuro },
+  stepPill: { flexDirection: "row", alignSelf: "center", backgroundColor: "rgba(255,255,255,0.85)", padding: 6, borderRadius: 999, gap: 4, marginBottom: 6 },
+  stepItem: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999 },
+  stepActive: { backgroundColor: COLORS.verdeMenta },
+  stepText: { fontSize: 13, color: COLORS.cinzaEscuro, fontWeight: "600" },
+  stepTextActive: { color: "#0f172a" },
+  bottomBar: { position: "absolute", left: 16, right: 16, bottom: 16, flexDirection: "row", gap: 12 },
+  actionBtn: { flex: 1, borderRadius: 12, paddingVertical: 14, alignItems: "center", justifyContent: "center" },
 });
