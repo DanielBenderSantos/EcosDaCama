@@ -1,16 +1,31 @@
 // src/utils/ai.ts
+import Constants from "expo-constants";
+
+function getBaseUrl() {
+  const fromEnv = process.env.EXPO_PUBLIC_API_URL;
+  // @ts-ignore (SDKs variam)
+  const fromExtra =
+    Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL ??
+    // @ts-ignore
+    Constants.manifest?.extra?.EXPO_PUBLIC_API_URL;
+
+  const base = (fromEnv || fromExtra || "").replace(/\/+$/, "");
+  if (!base) throw new Error("EXPO_PUBLIC_API_URL ausente.");
+  return base;
+}
+
 export async function interpretarSonhoIA(dream: string): Promise<string> {
-  const base = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
+  const base = getBaseUrl();
 
   const r = await fetch(`${base}/interpret-dream`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ dream, lang: "pt" })
+    body: JSON.stringify({ dream, lang: "pt" }),
   });
 
   if (!r.ok) {
-    const e = await r.text().catch(() => "");
-    throw new Error(`Falha ao interpretar (status ${r.status}). ${e}`);
+    const txt = await r.text().catch(() => "");
+    throw new Error(`Falha ao interpretar (status ${r.status}). ${txt}`);
   }
 
   const data = await r.json();
