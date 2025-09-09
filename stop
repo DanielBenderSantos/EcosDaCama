@@ -1,0 +1,209 @@
+* [33mcommit c3a3702678df1ed5fa935d2f80bef5f392fbc329[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mREACT-NATIVE[m[33m, [m[1;31morigin/REACT-NATIVE[m[33m)[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Mon Sep 8 20:46:10 2025 -0300
+[31m|[m 
+[31m|[m     ajuste de versao
+[31m|[m 
+* [33mcommit ec33c87660eaddc52e913f607c14d0ae824e7666[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Mon Sep 8 20:45:18 2025 -0300
+[31m|[m 
+[31m|[m     inicio grafico e alteração api
+[31m|[m 
+* [33mcommit 1cbba73d7b002991c69e2bcf296251933e5cf301[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sat Sep 6 10:44:36 2025 -0300
+[31m|[m 
+[31m|[m     teste controle backend
+[31m|[m 
+* [33mcommit bcfc870d53ff6ff97fd8bda2947908e050f340a2[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sat Sep 6 10:40:10 2025 -0300
+[31m|[m 
+[31m|[m     ajuste banco de dados
+[31m|[m 
+* [33mcommit 2378c63cfc5cdb8bde010c1a5c79ea7728033cba[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sat Sep 6 10:13:14 2025 -0300
+[31m|[m 
+[31m|[m     ajuste tela para aparecer o significado do sonho
+[31m|[m 
+* [33mcommit 90ccaad0d6dae51f398fec7bff9d1f495d3dff69[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sat Sep 6 09:57:13 2025 -0300
+[31m|[m 
+[31m|[m     tentativa de melhora de performance
+[31m|[m 
+* [33mcommit da36e876c54320d37c5e6e57c9509737bc01f2d6[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sat Sep 6 09:22:03 2025 -0300
+[31m|[m 
+[31m|[m     ajuste versao
+[31m|[m 
+* [33mcommit 61184f73184e6ba2eea5be08b74f80ebe28c11ad[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sat Sep 6 09:21:39 2025 -0300
+[31m|[m 
+[31m|[m     ajuste tela conforme teclado
+[31m|[m 
+* [33mcommit be2b70fbb256ca4374563b17b328b796b14d9aad[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sat Sep 6 08:13:13 2025 -0300
+[31m|[m 
+[31m|[m     ajuste apk
+[31m|[m 
+* [33mcommit d4f11b47c3e21c1739a5c3642d6ac4f5567f2bf7[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sat Sep 6 03:15:52 2025 -0300
+[31m|[m 
+[31m|[m     ajuste apk
+[31m|[m 
+* [33mcommit 6b384c700f3d6b45ccd8e4894d1b498ac5dfeedd[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sat Sep 6 02:43:44 2025 -0300
+[31m|[m 
+[31m|[m     numeros da sorte
+[31m|[m 
+* [33mcommit 2fe776de8bab11831f9397a38096756adf8c83bd[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sat Sep 6 02:32:11 2025 -0300
+[31m|[m 
+[31m|[m     numeros da sorte
+[31m|[m 
+* [33mcommit 2ea575f78964e300952f518c7f6c6494c8f8d88f[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Fri Sep 5 23:59:51 2025 -0300
+[31m|[m 
+[31m|[m     teste interpretar sonhos
+[31m|[m 
+* [33mcommit c02807732bd2ab84852a450380f9502d2d84dd9e[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Fri Sep 5 23:57:51 2025 -0300
+[31m|[m 
+[31m|[m     teste interpretar sonhos
+[31m|[m 
+* [33mcommit fe4f661a576a24ad6885284c11418b21e57c3a26[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Fri Sep 5 23:56:17 2025 -0300
+[31m|[m 
+[31m|[m     teste interpretar sonhos
+[31m|[m 
+* [33mcommit c1d606ba79ed8f88b68117010338f12bf145436e[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Fri Sep 5 23:52:17 2025 -0300
+[31m|[m 
+[31m|[m     teste interpretar sonhos
+[31m|[m 
+* [33mcommit 6aedafd14455e08c41657b0c38081fe915ed0b4d[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Wed Sep 3 20:51:59 2025 -0300
+[31m|[m 
+[31m|[m     alteração sentimentos
+[31m|[m 
+* [33mcommit 711da7bce26f9ed8f634e8b678c2fade290a1936[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Wed Sep 3 19:58:40 2025 -0300
+[31m|[m 
+[31m|[m     ajuste paginação novo sonho
+[31m|[m 
+* [33mcommit 7d084fc849be1e72e732949d309dea1cb84c466a[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sun Aug 31 19:57:55 2025 -0300
+[31m|[m 
+[31m|[m     ajuste para apk
+[31m|[m 
+* [33mcommit 534e05b58115f5d088bf44634adb0d4bab37a69c[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sun Aug 31 16:57:30 2025 -0300
+[31m|[m 
+[31m|[m     ajuste layout importar e exportar sonhos
+[31m|[m 
+* [33mcommit 3ce9f262138819727001c8dff9732941fdefb57d[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sun Aug 31 16:45:59 2025 -0300
+[31m|[m 
+[31m|[m     importar e exportar sonhos
+[31m|[m 
+* [33mcommit da553574fd572fbeec5473289e2fca7832d7bc5e[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Mon Aug 25 20:18:05 2025 -0300
+[31m|[m 
+[31m|[m     ajuste data/hora crud
+[31m|[m 
+* [33mcommit 8286e84ab1f619374c7bbd9c71e84651b8712951[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Mon Aug 25 19:50:35 2025 -0300
+[31m|[m 
+[31m|[m     crud completo
+[31m|[m 
+* [33mcommit 7225197b90995cd0d97aa5099d45553a9eaa76a4[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sat Aug 23 23:00:39 2025 -0300
+[31m|[m 
+[31m|[m     inicio banco de dados
+[31m|[m 
+* [33mcommit 969f278248f15e8b967770150378c2bcded3540f[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sat Aug 23 10:52:01 2025 -0300
+[31m|[m 
+[31m|[m     ajuste telas
+[31m|[m 
+* [33mcommit 1a5cad6a2ed715a3bf45211063b6951abf84cece[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sat Aug 23 08:15:19 2025 -0300
+[31m|[m 
+[31m|[m     ajuste scroll da tela novo sonho
+[31m|[m 
+* [33mcommit 4653c3deb6a9658d56b499d4dceb94f39cdf4b2a[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Thu Aug 21 21:33:17 2025 -0300
+[31m|[m 
+[31m|[m     alteração da tela de criar sonhos adiconando mais componentes
+[31m|[m 
+* [33mcommit 0082b662a6f6fca5cd1eeeaaac4b959b22681b89[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Wed Aug 20 20:42:53 2025 -0300
+[31m|[m 
+[31m|[m     add campos data e hora
+[31m|[m 
+* [33mcommit cf771431861a81010a60c0f1d3d1ee2ffad71932[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Wed Aug 20 20:13:10 2025 -0300
+[31m|[m 
+[31m|[m     add icone de deletar na tela inicial e começo da tela de criar sonhos
+[31m|[m 
+* [33mcommit 2b588432992ffdd030851456278a0069826b2406[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Tue Aug 19 23:55:02 2025 -0300
+[31m|[m 
+[31m|[m     ajuste tela inicial
+[31m|[m 
+* [33mcommit d3aabbb4e6b2eb39356dc939d2b7ab3830dcb71a[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Mon Aug 18 00:35:05 2025 -0300
+[31m|[m 
+[31m|[m     ajuste arquitetura do projeto base
+[31m|[m 
+* [33mcommit 44bfdc526a2ecfeaf56464516384c4224d7dc107[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Sat Aug 16 22:33:01 2025 -0300
+[31m|[m 
+[31m|[m     novo projeto base
+[31m|[m 
+* [33mcommit d29340ab6d5f70693c3118983e2809d6896761ff[m
+[31m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[31m|[m Date:   Tue Aug 12 22:53:12 2025 -0300
+[31m|[m 
+[31m|[m     Início do novo projeto base
+[31m|[m 
+* [33mcommit 6a64d01103fcc2b26cced75608e85ab972e8e7a5[m[33m ([m[1;32mmaster[m[33m)[m
+  Author: DanielBender <danielbendersantos@gmail.com>
+  Date:   Tue Aug 12 20:34:45 2025 -0300
+  
+      Initial commit
+      
+      Generated by create-expo-app 3.4.2.
+  
+* [33mcommit 0f49c33899a600d42ad4ef682533dcbf3652f5d9[m[33m ([m[1;31morigin/master[m[33m)[m
+[32m|[m Author: DanielBender <danielbendersantos@gmail.com>
+[32m|[m Date:   Mon May 5 11:0

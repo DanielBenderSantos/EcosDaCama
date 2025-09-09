@@ -83,3 +83,7 @@ export async function listSonhos(): Promise<Sonho[]> {
     await db.getAllAsync?.(sql, []) ?? await db.select?.(sql, []) ?? [];
   return rows as Sonho[];
 }
+export async function deleteSonho(id: number): Promise<void> {
+  const db = getDBOrThrow();
+  await db.exec(`DELETE FROM Sonhos WHERE id = ?`, [id]);
+}
