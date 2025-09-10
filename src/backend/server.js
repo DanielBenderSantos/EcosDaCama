@@ -1,4 +1,3 @@
-// src/backend/server.js
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -7,7 +6,7 @@ const crypto = require('crypto');
 const PORT = process.env.PORT || 3000;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const REQUEST_TIMEOUT_MS = Number(process.env.REQUEST_TIMEOUT_MS || 45000); // 45s
-const VERSION = "v-lucky-5-one-block";
+const VERSION = "v-lucky-6-modes";
 
 if (!OPENAI_API_KEY) {
   console.warn('[WARN] OPENAI_API_KEY não definida no .env');
@@ -109,25 +108,61 @@ function formatNums(arr) { return arr.map(pad2).join(', '); }
 function removeModelLuckyNumbersSection(text) {
   if (!text) return text;
 
-  // Padrões comuns de título (pt/en) + possíveis formatos
   const patterns = [
     /(?:^|\n)[ \t]*(?:\d+\)|[#*•-])?[ \t]*N[uú]meros da sorte\b[\s\S]*/i,
     /(?:^|\n)[ \t]*(?:\d+\)|[#*•-])?[ \t]*Lucky numbers\b[\s\S]*/i,
-    // às vezes o modelo usa linhas com loterias direto
     /(?:^|\n)[ \t]*(Lotof[aá]cil|Mega-?Sena|Dia de Sorte)\b[\s\S]*/i,
   ];
 
   let cleaned = text;
   for (const re of patterns) {
-    cleaned = cleaned.replace(re, ''); // remove tudo a partir do match
+    cleaned = cleaned.replace(re, '');
   }
-
-  // remove espaços e linhas duplas extras no fim
   return cleaned.trimEnd();
 }
 
+// ---------- Map de modos ----------
+const MODE_PROMPTS = {
+  // PT
+  pt: {
+    mistico:
+      "Você é um sábio intérprete dos sonhos. Traga significados simbólicos inspirados em tradições espirituais e arquetípicas, com tom poético, acolhedor e enigmático.",
+    psicologico:
+      "Você é um guia inspirado na psicologia dos sonhos. Relacione símbolos e emoções com arquétipos, inconsciente coletivo e aspectos internos, de forma clara e reflexiva.",
+    acolhedor:
+      "Você é um amigo acolhedor. Ajude a pessoa a refletir sobre os símbolos dos sonhos e suas emoções, trazendo encorajamento e conselhos práticos simples para o dia.",
+    historico:
+      "Você é um contador de histórias. Conecte os símbolos do sonho a mitos, lendas e narrativas antigas, trazendo interpretações criativas e inspiradoras.",
+    oraculo:
+      "Você é um oráculo dos sonhos. Suas interpretações são simbólicas, intuitivas e misteriosas, com uma linguagem ritualística, oferecendo insights como mensagens ocultas.",
+    motivacional:
+      "Você é um guia motivacional dos sonhos. Extraia símbolos como aprendizados e transforme-os em mensagens positivas e práticas para fortalecer o dia da pessoa.",
+    objetivo:
+      "Você é um analista objetivo de sonhos. Forneça interpretações curtas e diretas, com foco nos símbolos principais, emoções centrais e reflexões rápidas.",
+  },
+  // EN (fallback se lang !== 'pt')
+  en: {
+    mistico:
+      "You are a wise interpreter of dreams. Bring symbolic meanings inspired by spiritual and archetypal traditions, with a poetic, welcoming, and enigmatic tone.",
+    psicologico:
+      "You are a guide inspired by dream psychology. Relate symbols and emotions to archetypes, the collective unconscious, and inner aspects, clearly and reflectively.",
+    acolhedor:
+      "You are a supportive friend. Help the person reflect on dream symbols and emotions, offering encouragement and simple, practical advice for the day.",
+    historico:
+      "You are a storyteller. Connect the dream's symbols to myths, legends, and ancient narratives, bringing creative and inspiring interpretations.",
+    oraculo:
+      "You are a dream oracle. Your interpretations are symbolic, intuitive, and mysterious, with a ritualistic language offering insights like hidden messages.",
+    motivacional:
+      "You are a motivational dream coach. Extract symbols as learnings and turn them into positive, practical messages to strengthen the person's day.",
+    objetivo:
+      "You are an objective dream analyst. Provide short and direct interpretations, focusing on the main symbols, core emotions, and quick reflections.",
+  },
+};
+
 // ---------- health ----------
-app.get('/', (_req, res) => res.json({ ok: true, service: 'EcosDaCama Dream API', version: VERSION }));
+app.get('/', (_req, res) =>
+  res.json({ ok: true, service: 'EcosDaCama Dream API', version: VERSION })
+);
 
 // Preflight explícito (web)
 app.options('/interpret-dream', cors());
@@ -135,26 +170,27 @@ app.options('/interpret-dream', cors());
 // ---------- rota principal ----------
 app.post('/interpret-dream', async (req, res) => {
   try {
-    const { dream, lang = 'pt' } = req.body || {};
+    const { dream, lang = 'pt', mode = 'mistico' } = req.body || {};
     if (!dream || typeof dream !== 'string' || dream.trim().length < 10) {
       return res.status(400).json({ error: 'Envie o texto do sonho (≥ 10 chars).' });
     }
 
-    const system =
-      lang === 'pt'
-        ? 'Você é um sábio intérprete dos sonhos. Traga significados simbólicos inspirados em tradições espirituais e arquetípicas, com tom poético, acolhedor e enigmático'
-        : 'You are a wise interpreter of dreams. You bring symbolic meanings inspired by spiritual and archetypal traditions, with a poetic, welcoming, and enigmatic tone.';
+    // normaliza língua e modo
+    const isPt = (lang || 'pt').toLowerCase().startsWith('pt');
+    const langKey = isPt ? 'pt' : 'en';
+    const modeKey = String(mode || 'mistico').toLowerCase();
 
-    // ⚠️ Agora o prompt pede só 4 itens. O item 5 (números) será sempre injetado pelo backend.
-    const user =
-      lang === 'pt'
-        ? `Texto do sonho: """${dream.trim()}"""
+    // escolhe system por modo (fallback: mistico)
+    const system = MODE_PROMPTS[langKey][modeKey] || MODE_PROMPTS[langKey].mistico;
+
+    // instruções do usuário (mantidas como no seu código)
+    const user = isPt
+      ? `Texto do sonho: """${dream.trim()}"""
 Forneça os símbolos e possíveis significados do sonho;
 tema central e emoções.
 No final coloque perguntas de auto reflexão.
 E uma ação simples pra hoje.`
-        : `Dream text: """${dream.trim()}"""
-
+      : `Dream text: """${dream.trim()}"""
 Provide the dream's symbols and possible meanings;
 the central theme and emotions.
 At the end, include reflection questions
@@ -174,7 +210,7 @@ and one simple action for today.`;
     const raw = extractOutputText(data);
 
     // remove qualquer "Números da sorte" que o modelo colocou
-    let text = removeModelLuckyNumbersSection(raw || 'Não consegui interpretar agora.');
+    let text = removeModelLuckyNumbersSection(raw || (isPt ? 'Não consegui interpretar agora.' : 'Could not interpret now.'));
 
     // ---------- gera os números da sorte (determinístico por texto) ----------
     const rng = rngFromText(dream.trim());
@@ -191,14 +227,11 @@ and one simple action for today.`;
       '   _Obs.: apenas diversão; sem garantia de resultados._',
     ].join('\n');
 
-    // concatena como 5º item, garantindo quebra de linha
     if (!text.endsWith('\n')) text += '\n';
     text += numeros;
 
-    // opcional: loga o final para auditoria
-    console.log('[INTERP OK]', dream.trim());
-
-    res.json({ interpretation: text });
+    console.log('[INTERP OK]', { mode: modeKey, lang: langKey });
+    res.json({ interpretation: text, mode: modeKey, lang: langKey, version: VERSION });
   } catch (e) {
     const isAbort = e?.name === 'AbortError';
     console.error(isAbort ? '[Timeout]' : '[Server error]', e?.message || e);
