@@ -230,6 +230,7 @@ and one simple action for today.`;
     if (!text.endsWith('\n')) text += '\n';
     text += numeros;
 
+    
     console.log('[INTERP OK]', { mode: modeKey, lang: langKey , sonho:dream  });
     res.json({ interpretation: text, mode: modeKey, lang: langKey, version: VERSION });
   } catch (e) {
