@@ -128,128 +128,107 @@ export default function Index() {
   };
 
   return (
-    <SafeAreaProvider>
-      {/* Deixe translúcido e sem cor de fundo pra não “empurrar” nada errado */}
-      <StatusBar style="dark" translucent backgroundColor="transparent" />
-
-      {/* INCLUA o bottom nos edges */}
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }} edges={["top", "bottom", "left", "right"]}>
-        <LinearGradient
-          colors={["#7c74c4ff", "#f0c1b4ff"]}
-          style={{ flex: 1 }}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-            <View
-              style={[
-                styles.card,
-                {
-                  backgroundColor: "rgba(255, 255, 255, 0.57)",
-                  // Evite travar a altura; use flex para a área se ajustar e não “brigar” com o inset inferior
-                  minHeight: SCREEN_HEIGHT * 0.9,
-                  width: "90%",
-                },
-              ]}
-            >
-              {/* Topo: busca + avatar */}
-              <View style={styles.topBar}>
-                <TextInput
-                  placeholder="Pesquisar"
-                  value={query}
-                  placeholderTextColor={"black"}
-                  onChangeText={setQuery}
-                  style={styles.pesquisa}
-                />
-                <Pressable
-                  onPress={goProfile}
-                  style={({ pressed }) => [pressed && { opacity: 0.7 }]}
-                  accessibilityRole="button"
-                >
-                  <FontAwesome name="user-circle" size={32} color="black" />
-                </Pressable>
-              </View>
-
-              {/* ====== LISTAGEM ====== */}
-              <ScrollView
-                contentContainerStyle={{
-                  padding: 12,
-                  gap: 12,
-                  // garante respiro para o nav bar inferior
-                  paddingBottom: 12 + insets.bottom + 48, // 48 = espaço pro botão “+”
-                }}
-                showsVerticalScrollIndicator
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-              >
-                {loading ? (
-                  <Text style={styles.muted}>Carregando…</Text>
-                ) : filtered.length === 0 ? (
-                  <Text style={styles.muted}>Nenhum sonho encontrado.</Text>
-                ) : (
-                  filtered.map((s) => (
-                    <Pressable
-                      key={s.id}
-                      onPress={() => openEdit(s.id)}
-                      onLongPress={() => confirmDelete(s.id)}
-                      delayLongPress={400}
-                      accessibilityRole="button"
-                      style={({ pressed }) => [
-                        styles.sonhoCard,
-                        Platform.OS === "web" && ({ cursor: "pointer" } as any),
-                        pressed && { opacity: 0.9 },
-                      ]}
-                      {...(Platform.OS === "web"
-                        ? {
-                            onContextMenu: (e: any) => {
-                              e.preventDefault();
-                              confirmDelete(s.id);
-                            },
-                          }
-                        : {})}
-                    >
-                      {/* título */}
-                      <Text style={styles.sonhoTitulo}>{s.titulo || "Sem título"}</Text>
-
-                      {/* trecho */}
-                      <Text style={styles.sonhoTrecho} numberOfLines={3}>
-                        {s.sonho}
-                      </Text>
-
-                      {/* metadados em coluna */}
-                      <View style={{ marginTop: 6 }}>
-                        <Text style={styles.meta}>
-                          Tipo: <Text style={styles.metaStrong}>{s.tipo}</Text>
-                        </Text>
-                        <Text style={styles.meta}>
-                          Humor:{" "}
-                          <Text style={styles.metaStrong}>
-                            {s.humor ? `${HUMOR_EMOJI[s.humor]} ${HUMOR_LABEL[s.humor]}` : "—"}
-                          </Text>
-                        </Text>
-                      </View>
-                    </Pressable>
-                  ))
-                )}
-              </ScrollView>
-
-              {/* Botão adicionar - com padding inferior baseado no inset */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "flex-end",
-                  paddingBottom: insets.bottom, // evita ficar sob o nav bar
-                }}
-              >
-                <Pressable onPress={handleNext} style={({ pressed }) => [pressed && { opacity: 0.7 }]} accessibilityRole="button">
-                  <FontAwesome name="plus-circle" size={40} color="purple" />
-                </Pressable>
-              </View>
+  <SafeAreaProvider>
+    <StatusBar style="dark" translucent backgroundColor="transparent" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }} edges={["top", "bottom", "left", "right"]}>
+      <LinearGradient
+        colors={["#7c74c4ff", "#f0c1b4ff"]}
+        style={{ flex: 1 }}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        {/* Container principal */}
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "flex-start", paddingTop: 10 }}>
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: "rgba(255,255,255,0.57)",
+                flex: 1,
+                width: "90%",
+              },
+            ]}
+          >
+            {/* Topo: busca + avatar */}
+            <View style={styles.topBar}>
+              <TextInput
+                placeholder="Pesquisar"
+                value={query}
+                placeholderTextColor={"black"}
+                onChangeText={setQuery}
+                style={styles.pesquisa}
+              />
+              <Pressable onPress={goProfile} style={({ pressed }) => [pressed && { opacity: 0.7 }]} accessibilityRole="button">
+                <FontAwesome name="user-circle" size={32} color="black" />
+              </Pressable>
             </View>
+
+            {/* LISTAGEM */}
+            <ScrollView
+              contentContainerStyle={{
+                padding: 12,
+                gap: 12,
+                paddingBottom: insets.bottom + 100, // espaço extra pro FAB
+              }}
+              showsVerticalScrollIndicator
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            >
+              {loading ? (
+                <Text style={styles.muted}>Carregando…</Text>
+              ) : filtered.length === 0 ? (
+                <Text style={styles.muted}>Nenhum sonho encontrado.</Text>
+              ) : (
+                filtered.map((s) => (
+                  <Pressable
+                    key={s.id}
+                    onPress={() => openEdit(s.id)}
+                    onLongPress={() => confirmDelete(s.id)}
+                    delayLongPress={400}
+                    accessibilityRole="button"
+                    style={({ pressed }) => [
+                      styles.sonhoCard,
+                      Platform.OS === "web" && ({ cursor: "pointer" } as any),
+                      pressed && { opacity: 0.9 },
+                    ]}
+                  >
+                    <Text style={styles.sonhoTitulo}>{s.titulo || "Sem título"}</Text>
+                    <Text style={styles.sonhoTrecho} numberOfLines={3}>
+                      {s.sonho}
+                    </Text>
+                    <View style={{ marginTop: 6 }}>
+                      <Text style={styles.meta}>
+                        Tipo: <Text style={styles.metaStrong}>{s.tipo}</Text>
+                      </Text>
+                      <Text style={styles.meta}>
+                        Humor:{" "}
+                        <Text style={styles.metaStrong}>
+                          {s.humor ? `${HUMOR_EMOJI[s.humor]} ${HUMOR_LABEL[s.humor]}` : "—"}
+                        </Text>
+                      </Text>
+                    </View>
+                  </Pressable>
+                ))
+              )}
+            </ScrollView>
           </View>
-        </LinearGradient>
-      </SafeAreaView>
-    </SafeAreaProvider>
-  );
+        </View>
+
+        {/* FAB - botão flutuante */}
+        <Pressable
+          onPress={handleNext}
+          style={{
+            position: "absolute",
+            bottom: insets.bottom + 20,
+            right: 25,
+          }}
+        >
+          <FontAwesome name="plus-circle" size={60} color="purple" />
+        </Pressable>
+      </LinearGradient>
+    </SafeAreaView>
+  </SafeAreaProvider>
+);
+
 }
 
 const styles = StyleSheet.create({

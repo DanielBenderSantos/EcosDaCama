@@ -14,7 +14,17 @@
         "EXPO_PUBLIC_API_URL": "https://ecosdacama-api.onrender.com"
       }
     },
+    "internal-apk": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://ecosdacama-api.onrender.com"
+      }
+    },
     "production": {
+      "distribution": "store",
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://ecosdacama-api.onrender.com"
