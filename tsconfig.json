@@ -1,20 +1,13 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "jsx": "react-jsx",
     "strict": true,
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    },
-    "moduleResolution": "bundler",
-    "moduleSuffixes": [".web", ".native", ""],
-    "skipLibCheck": true
+    "noEmit": true,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": { "@/*": ["src/*"] },
+    "types": ["react", "react-native", "expo-env"]
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", "expo-env.d.ts"]
 }
