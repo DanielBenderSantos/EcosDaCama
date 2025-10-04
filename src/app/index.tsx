@@ -217,8 +217,8 @@ export default function Index() {
         <Pressable
           onPress={handleNext}
           style={{
-            position: "absolute",
-            bottom: insets.bottom + 20,
+            position: "fixed",
+            bottom: insets.bottom + 50,
             right: 25,
           }}
         >
