@@ -171,7 +171,7 @@ export default function Index() {
                   padding: 12,
                   gap: 12,
                   // folga extra pro FAB e barra de navegação
-                  paddingBottom: SAFE_BOTTOM + 100,
+                  paddingBottom: SAFE_BOTTOM + 20,
                 }}
                 showsVerticalScrollIndicator
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
