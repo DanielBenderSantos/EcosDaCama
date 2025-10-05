@@ -40,6 +40,7 @@ const HUMOR_EMOJI: Record<NonNullable<Sonho["humor"]>, string> = {
 
 export default function Index() {
   const insets = useSafeAreaInsets();
+  const SAFE_BOTTOM = Math.max(insets.bottom, 24); // garante folga mesmo quando o inset vem 0
 
   const [sonhos, setSonhos] = useState<Sonho[]>([]);
   const [loading, setLoading] = useState(true);
@@ -128,107 +129,111 @@ export default function Index() {
   };
 
   return (
-  <SafeAreaProvider>
-    <StatusBar style="dark" translucent backgroundColor="transparent" />
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }} edges={["top", "bottom", "left", "right"]}>
-      <LinearGradient
-        colors={["#7c74c4ff", "#f0c1b4ff"]}
-        style={{ flex: 1 }}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        {/* Container principal */}
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "flex-start", paddingTop: 10 }}>
-          <View
-            style={[
-              styles.card,
-              {
-                backgroundColor: "rgba(255,255,255,0.57)",
-                flex: 1,
-                width: "90%",
-              },
-            ]}
-          >
-            {/* Topo: busca + avatar */}
-            <View style={styles.topBar}>
-              <TextInput
-                placeholder="Pesquisar"
-                value={query}
-                placeholderTextColor={"black"}
-                onChangeText={setQuery}
-                style={styles.pesquisa}
-              />
-              <Pressable onPress={goProfile} style={({ pressed }) => [pressed && { opacity: 0.7 }]} accessibilityRole="button">
-                <FontAwesome name="user-circle" size={32} color="black" />
-              </Pressable>
-            </View>
-
-            {/* LISTAGEM */}
-            <ScrollView
-              contentContainerStyle={{
-                padding: 12,
-                gap: 12,
-                paddingBottom: insets.bottom + 100, // espaço extra pro FAB
-              }}
-              showsVerticalScrollIndicator
-              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-            >
-              {loading ? (
-                <Text style={styles.muted}>Carregando…</Text>
-              ) : filtered.length === 0 ? (
-                <Text style={styles.muted}>Nenhum sonho encontrado.</Text>
-              ) : (
-                filtered.map((s) => (
-                  <Pressable
-                    key={s.id}
-                    onPress={() => openEdit(s.id)}
-                    onLongPress={() => confirmDelete(s.id)}
-                    delayLongPress={400}
-                    accessibilityRole="button"
-                    style={({ pressed }) => [
-                      styles.sonhoCard,
-                      Platform.OS === "web" && ({ cursor: "pointer" } as any),
-                      pressed && { opacity: 0.9 },
-                    ]}
-                  >
-                    <Text style={styles.sonhoTitulo}>{s.titulo || "Sem título"}</Text>
-                    <Text style={styles.sonhoTrecho} numberOfLines={3}>
-                      {s.sonho}
-                    </Text>
-                    <View style={{ marginTop: 6 }}>
-                      <Text style={styles.meta}>
-                        Tipo: <Text style={styles.metaStrong}>{s.tipo}</Text>
-                      </Text>
-                      <Text style={styles.meta}>
-                        Humor:{" "}
-                        <Text style={styles.metaStrong}>
-                          {s.humor ? `${HUMOR_EMOJI[s.humor]} ${HUMOR_LABEL[s.humor]}` : "—"}
-                        </Text>
-                      </Text>
-                    </View>
-                  </Pressable>
-                ))
-              )}
-            </ScrollView>
-          </View>
-        </View>
-
-        {/* FAB - botão flutuante */}
-        <Pressable
-          onPress={handleNext}
-          style={{
-            position: "absolute",
-            bottom: insets.bottom + 50,
-            right: 25,
-          }}
+    <SafeAreaProvider>
+      {/* não-translucent evita variação de insets no Android */}
+      <StatusBar style="dark" translucent={false} backgroundColor="transparent" />
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }} edges={["top", "bottom", "left", "right"]}>
+        <LinearGradient
+          colors={["#7c74c4ff", "#f0c1b4ff"]}
+          style={{ flex: 1 }}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         >
-          <FontAwesome name="plus-circle" size={60} color="purple" />
-        </Pressable>
-      </LinearGradient>
-    </SafeAreaView>
-  </SafeAreaProvider>
-);
+          {/* Container principal */}
+          <View style={{ flex: 1, alignItems: "center", justifyContent: "flex-start", paddingTop: 10 }}>
+            <View
+              style={[
+                styles.card,
+                {
+                  backgroundColor: "rgba(255,255,255,0.57)",
+                  flex: 1,
+                  width: "90%",
+                },
+              ]}
+            >
+              {/* Topo: busca + avatar */}
+              <View style={styles.topBar}>
+                <TextInput
+                  placeholder="Pesquisar"
+                  value={query}
+                  placeholderTextColor={"black"}
+                  onChangeText={setQuery}
+                  style={styles.pesquisa}
+                />
+                <Pressable onPress={goProfile} style={({ pressed }) => [pressed && { opacity: 0.7 }]} accessibilityRole="button">
+                  <FontAwesome name="user-circle" size={32} color="black" />
+                </Pressable>
+              </View>
 
+              {/* LISTAGEM */}
+              <ScrollView
+                contentContainerStyle={{
+                  padding: 12,
+                  gap: 12,
+                  // folga extra pro FAB e barra de navegação
+                  paddingBottom: SAFE_BOTTOM + 100,
+                }}
+                showsVerticalScrollIndicator
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+              >
+                {loading ? (
+                  <Text style={styles.muted}>Carregando…</Text>
+                ) : filtered.length === 0 ? (
+                  <Text style={styles.muted}>Nenhum sonho encontrado.</Text>
+                ) : (
+                  filtered.map((s) => (
+                    <Pressable
+                      key={s.id}
+                      onPress={() => openEdit(s.id)}
+                      onLongPress={() => confirmDelete(s.id)}
+                      delayLongPress={400}
+                      accessibilityRole="button"
+                      style={({ pressed }) => [
+                        styles.sonhoCard,
+                        Platform.OS === "web" && ({ cursor: "pointer" } as any),
+                        pressed && { opacity: 0.9 },
+                      ]}
+                    >
+                      <Text style={styles.sonhoTitulo}>{s.titulo || "Sem título"}</Text>
+                      <Text style={styles.sonhoTrecho} numberOfLines={3}>
+                        {s.sonho}
+                      </Text>
+                      <View style={{ marginTop: 6 }}>
+                        <Text style={styles.meta}>
+                          Tipo: <Text style={styles.metaStrong}>{s.tipo}</Text>
+                        </Text>
+                        <Text style={styles.meta}>
+                          Humor:{" "}
+                          <Text style={styles.metaStrong}>
+                            {s.humor ? `${HUMOR_EMOJI[s.humor]} ${HUMOR_LABEL[s.humor]}` : "—"}
+                          </Text>
+                        </Text>
+                      </View>
+                    </Pressable>
+                  ))
+                )}
+              </ScrollView>
+            </View>
+          </View>
+
+          {/* FAB - botão flutuante */}
+          <Pressable
+            onPress={handleNext}
+            style={{
+              position: "absolute",
+              right: 25,
+              bottom: SAFE_BOTTOM + 16, // acima da barra nativa
+              zIndex: 999,              // RN
+              elevation: 8,             // Android
+            }}
+            accessibilityRole="button"
+          >
+            <FontAwesome name="plus-circle" size={60} color="purple" />
+          </Pressable>
+        </LinearGradient>
+      </SafeAreaView>
+    </SafeAreaProvider>
+  );
 }
 
 const styles = StyleSheet.create({

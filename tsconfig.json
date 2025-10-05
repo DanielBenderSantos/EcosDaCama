@@ -13,8 +13,7 @@
     },
     "types": [
       "react",
-      "react-native",
-      "expo-env"
+      "react-native"
     ]
   },
   "include": [
