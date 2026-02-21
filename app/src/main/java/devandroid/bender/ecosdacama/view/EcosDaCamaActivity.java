@@ -16,6 +16,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import devandroid.bender.ecosdacama.BuildConfig;
 import devandroid.bender.ecosdacama.R;
 import devandroid.bender.ecosdacama.database.EcosDaCamaDB;
 import devandroid.bender.ecosdacama.model.Sonho;
@@ -51,8 +52,7 @@ public class EcosDaCamaActivity extends AppCompatActivity {
     private int sonhoId = -1;
     private String significadoDoSonho = "";
 
-    private static final String API_URL = "https://ecos-da-cama.vercel.app/api/interpretar-sonho";
-
+    private static final String API_URL = BuildConfig.DREAM_API_URL;
     private final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)

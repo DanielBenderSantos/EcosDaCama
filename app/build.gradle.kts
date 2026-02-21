@@ -5,6 +5,9 @@ plugins {
 android {
     namespace = "devandroid.bender.ecosdacama"
     compileSdk = 33
+    buildFeatures {
+        buildConfig = true
+    }
 
     defaultConfig {
         applicationId = "devandroid.bender.ecosdacama"
@@ -12,6 +15,11 @@ android {
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
+        buildConfigField(
+            "String",
+            "DREAM_API_URL",
+            "\"https://SEU-PROJETO.vercel.app/api/interpretar-sonho\""
+        )
     }
 
     buildTypes {
