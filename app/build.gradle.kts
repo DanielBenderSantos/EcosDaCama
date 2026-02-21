@@ -18,7 +18,7 @@ android {
         buildConfigField(
             "String",
             "DREAM_API_URL",
-            "\"https://SEU-PROJETO.vercel.app/api/interpretar-sonho\""
+            "\"https://ecos-da-cama.vercel.app/api/interpretar-sonho\""
         )
     }
 
