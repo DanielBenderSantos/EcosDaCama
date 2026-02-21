@@ -1,13 +1,13 @@
 <resources>
-    <string name="app_name">Ecos Dos Sonhos</string>
-    <string name="txt_titulo">Ecos Dos Sonhos</string>
-    <string name="txt_hint_edit_gasolina">R$ Gasolina</string>
-    <string name="txt_hint_edit_etanol">R$ Etanol</string>
-    <string name="txt_hint_edit_nome_do_curso">Nome do Curso Desejado</string>
-    <string name="txt_hint_edit_telefone_contato">Telefone de contato</string>
-    <string name="txt_button_limpar">LIMPAR</string>
-    <string name="txt_button_salvar">SALVAR</string>
-    <string name="txt_button_calcular">CALCULAR</string>
-    <string name="txt_button_finalizar">FINALIZAR</string>
-    <string name="txt_resultado">RESULTADO</string>
+    <string name="label_prompt_style">Estilo de interpretação</string>
+
+    <string-array name="prompt_style_options" >
+        <item >🌙 Místico/Espiritual</item>
+        <item>🧠 Psicológico/Junguiano</item>
+        <item>💖 Acolhedor/Autoajuda</item>
+        <item>📜 Histórico/Mítico</item>
+        <item>🔮 Oráculo/Esotérico</item>
+        <item>🌱 Motivacional</item>
+        <item>🌌 Minimalista/Objetivo</item>
+    </string-array>
 </resources>

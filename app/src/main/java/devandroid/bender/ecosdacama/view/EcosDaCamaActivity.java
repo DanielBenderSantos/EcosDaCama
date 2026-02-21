@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -45,6 +46,7 @@ public class EcosDaCamaActivity extends AppCompatActivity {
     Button btnSalvar, btnVerSignificado;
     EditText editSonho, editTitulo;
     ImageButton btnMicrofone;
+    Spinner spinnerPromptStyle;
 
     private static final int REQUEST_CODE_SPEECH_INPUT = 1;
     private EcosDaCamaDB dbHelper;
@@ -72,6 +74,7 @@ public class EcosDaCamaActivity extends AppCompatActivity {
         btnMicrofone = findViewById(R.id.btnMicrofone);
         btnVerSignificado = findViewById(R.id.btnVerSignificado);
         tvSignificado = findViewById(R.id.tvSignificado);
+        spinnerPromptStyle = findViewById(R.id.spinnerPromptStyle);
 
         dbHelper = new EcosDaCamaDB(this);
         calendar = Calendar.getInstance();
@@ -182,6 +185,28 @@ public class EcosDaCamaActivity extends AppCompatActivity {
             }
         }
     }
+    private String getPromptSelecionado() {
+        int posicaoSelecionada = spinnerPromptStyle.getSelectedItemPosition();
+
+        switch (posicaoSelecionada) {
+            case 0:
+                return "Você é um sábio intérprete dos sonhos. Traga significados simbólicos inspirados em tradições espirituais e arquetípicas, com tom poético, acolhedor e enigmático.";
+            case 1:
+                return "Você é um guia inspirado na psicologia dos sonhos. Relacione símbolos e emoções com arquétipos, inconsciente coletivo e aspectos internos, de forma clara e reflexiva.";
+            case 2:
+                return "Você é um amigo acolhedor. Ajude a pessoa a refletir sobre os símbolos dos sonhos e suas emoções, trazendo encorajamento e conselhos práticos simples para o dia.";
+            case 3:
+                return "Você é um contador de histórias. Conecte os símbolos do sonho a mitos, lendas e narrativas antigas, trazendo interpretações criativas e inspiradoras.";
+            case 4:
+                return "Você é um oráculo dos sonhos. Suas interpretações são simbólicas, intuitivas e misteriosas, com uma linguagem ritualística, oferecendo insights como mensagens ocultas.";
+            case 5:
+                return "Você é um guia motivacional dos sonhos. Extraia símbolos como aprendizados e transforme-os em mensagens positivas e práticas para fortalecer o dia da pessoa.";
+            case 6:
+                return "Você é um analista objetivo de sonhos. Forneça interpretações curtas e diretas, com foco nos símbolos principais, emoções centrais e reflexões rápidas.";
+            default:
+                return "Analise o seguinte sonho e me diga seu possível significado com base em interpretações comuns da simbologia dos sonhos. Seja objetivo e considere aspectos psicológicos e simbólicos tradicionais.";
+        }
+    }
 
     private void salvarSonhoNoBanco(Sonho sonho) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -204,7 +229,7 @@ public class EcosDaCamaActivity extends AppCompatActivity {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("sonho", textoDoSonho);
-            jsonObject.put("prompt", "Analise o seguinte sonho e me diga seu possível significado com base em interpretações comuns da simbologia dos sonhos. Seja objetivo e considere aspectos psicológicos e simbólicos tradicionais.");
+            jsonObject.put("prompt", getPromptSelecionado());
 
         } catch (JSONException e) {
             Log.e("EcosDaCama", "Erro ao criar requisição JSON", e);
