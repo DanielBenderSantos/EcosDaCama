@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/fundo"
+    android:background="@drawable/screen_background"
     tools:context=".view.EcosDaCamaActivity">
 
     <LinearLayout
@@ -31,7 +31,7 @@
                 android:focusable="true"
                 android:padding="12dp"
                 android:text="Data"
-                android:textColor="#000"
+                android:textColor="@color/text_primary"
                 android:textSize="18sp" />
 
             <TextView
@@ -44,7 +44,7 @@
                 android:focusable="true"
                 android:padding="12dp"
                 android:text="Hora"
-                android:textColor="#000"
+                android:textColor="@color/text_primary"
                 android:textSize="18sp" />
 
         </LinearLayout>
@@ -54,14 +54,14 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginVertical="8dp"
-            android:background="#EEE" />
+            android:textColor="@color/text_primary" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Título"
-            android:textColor="#FFF"
+            android:textColor="@color/text_primary"
             android:textSize="20sp" />
 
         <EditText
@@ -72,8 +72,8 @@
             android:background="@drawable/rounded_background"
             android:hint="Título do seu sonho aqui"
             android:padding="12dp"
-            android:textColor="#222222"
-            android:textColorHint="#222222"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_secondary"
             android:textSize="16sp" />
 
         <TextView
@@ -81,7 +81,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="História"
-            android:textColor="#FFF"
+            android:textColor="@color/text_primary"
             android:textSize="20sp" />
 
         <ImageButton
@@ -91,17 +91,19 @@
             android:layout_marginTop="16dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:contentDescription="Microfone"
+            android:textColor="@color/text_primary"
             android:src="@android:drawable/ic_btn_speak_now" />
+
         <EditText
-        android:id="@+id/editSonho"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/rounded_background"
-        android:hint="Descrição do sonho"
-        android:padding="12dp"
-        android:textColor="#222222"
-        android:textColorHint="#222222" />
+            android:id="@+id/editSonho"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/rounded_background"
+            android:hint="Descrição do sonho"
+            android:padding="12dp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_secondary" />
 
 
 
@@ -110,7 +112,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:text="@string/label_prompt_style"
-            android:textColor="#FFF"
+            android:textColor="@color/text_primary"
             android:textSize="18sp" />
 
         <Spinner
@@ -120,11 +122,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:background="@drawable/rounded_background"
-            android:textColor="#222222"
-            android:textColorHint="#222222"
             android:entries="@array/prompt_style_options"
-            android:padding="10dp" />
-
+            android:padding="10dp"
+            android:popupBackground="@drawable/rounded_background" />
         <TextView
             android:id="@+id/tvSignificado"
             android:layout_width="match_parent"
@@ -133,7 +133,7 @@
             android:background="@drawable/rounded_background"
             android:padding="12dp"
             android:text=""
-            android:textColor="#222222"
+            android:textColor="@color/text_primary"
             android:textSize="16sp"
             android:visibility="gone"
             tools:visibility="visible" />
@@ -155,4 +155,4 @@
 
 
     </LinearLayout>
-    </ScrollView>
+</ScrollView>

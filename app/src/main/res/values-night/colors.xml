@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="screen_background_start">#10131C</color>
+    <color name="screen_background_end">#1A2233</color>
+    <color name="surface_card">#252C3D</color>
+    <color name="surface_card_stroke">#3B4357</color>
+    <color name="text_primary">#F2F5FF</color>
+    <color name="text_secondary">#B4BCCE</color>
+</resources>

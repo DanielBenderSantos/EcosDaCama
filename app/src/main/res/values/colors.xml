@@ -4,4 +4,10 @@
     <color name="white">#FFFFFFFF</color>
     <color name="CorBotoes">#52ADB3</color>
 
+    <color name="screen_background_start">#F5F8FF</color>
+    <color name="screen_background_end">#E6EEFF</color>
+    <color name="surface_card">#FFFFFFFF</color>
+    <color name="surface_card_stroke">#D8E3FF</color>
+    <color name="text_primary">#1F2430</color>
+    <color name="text_secondary">#5E6678</color>
 </resources>
