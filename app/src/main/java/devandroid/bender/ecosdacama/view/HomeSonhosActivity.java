@@ -1,7 +1,6 @@
 package devandroid.bender.ecosdacama.view;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -13,9 +12,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
@@ -59,30 +55,9 @@ public class HomeSonhosActivity extends AppCompatActivity {
         });
 
         imageProfile.setOnClickListener(v -> {
-            GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(HomeSonhosActivity.this);
-
-            if (account != null) {
                 Intent intent = new Intent(HomeSonhosActivity.this, PerfilActivity.class);
                 startActivity(intent);
-            } else {
-                Intent intent = new Intent(HomeSonhosActivity.this, LoginActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                finish();
-            }
         });
-
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        if (account != null) {
-            Uri photoUri = account.getPhotoUrl();
-            if (photoUri != null) {
-                Glide.with(this)
-                        .load(photoUri)
-                        .circleCrop()
-                        .placeholder(R.drawable.cama)
-                        .into(imageProfile);
-            }
-        }
     }
 
     @Override

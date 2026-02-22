@@ -8,9 +8,6 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-
 import java.io.File;
 import java.util.List;
 
@@ -20,8 +17,6 @@ import devandroid.bender.ecosdacama.model.Sonho;
 import devandroid.bender.ecosdacama.util.SonhosExporter;
 
 public class PerfilActivity extends AppCompatActivity {
-
-    private GoogleSignInClient mGoogleSignInClient;
     private Button btnLogout;
     private Button btnExportarSonhos;
 
@@ -29,24 +24,7 @@ public class PerfilActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_perfil);
-
-        mGoogleSignInClient = GoogleSignIn.getClient(this,
-                new com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(
-                        com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .build());
-
-        btnLogout = findViewById(R.id.btnLogout);
         btnExportarSonhos = findViewById(R.id.btnExportarSonhos); // novo botão
-
-        btnLogout.setOnClickListener(v -> {
-            mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
-                Intent intent = new Intent(PerfilActivity.this, LoginActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                finish();
-            });
-        });
-
         btnExportarSonhos.setOnClickListener(v -> exportarSonhosParaArquivo());
     }
 
@@ -65,7 +43,6 @@ public class PerfilActivity extends AppCompatActivity {
 
         // 3. Compartilhar para salvar no Google Drive
         Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", file);
-
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_STREAM, uri);

@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/fundolu"
+    android:background="@drawable/fundo"
     >
 
     <!-- Barra superior com campo de pesquisa, botão de lupa e foto do usuário -->
@@ -41,27 +41,29 @@
         <!-- Imagem de perfil do usuário -->
         <ImageView
             android:id="@+id/imageProfile"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
             android:src="@drawable/cama"
-            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- RecyclerView para exibir os sonhos -->
+
+    <!-- Botão de adicionar (FloatingActionButton) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewSonhos"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/topBar"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/topBar"
+        app:layout_constraintVertical_bias="0.0" />
 
-    <!-- Botão de adicionar (FloatingActionButton) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddSonho"
         android:layout_width="wrap_content"
