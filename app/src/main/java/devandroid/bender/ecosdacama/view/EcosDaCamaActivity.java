@@ -5,8 +5,11 @@ import android.app.TimePickerDialog;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.DatePicker;
@@ -53,6 +56,8 @@ public class EcosDaCamaActivity extends AppCompatActivity {
     private Calendar calendar;
     private int sonhoId = -1;
     private String significadoDoSonho = "";
+    private String descricaoBaseComSignificado = "";
+    private int estiloBaseComSignificado = 0;
 
     private static final String API_URL = BuildConfig.DREAM_API_URL;
     private final OkHttpClient client = new OkHttpClient.Builder()
@@ -76,6 +81,29 @@ public class EcosDaCamaActivity extends AppCompatActivity {
         tvSignificado = findViewById(R.id.tvSignificado);
         spinnerPromptStyle = findViewById(R.id.spinnerPromptStyle);
 
+        editSonho.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                atualizarVisibilidadeBotaoSignificado();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { }
+        });
+
+        spinnerPromptStyle.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                atualizarVisibilidadeBotaoSignificado();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) { }
+        });
+
         dbHelper = new EcosDaCamaDB(this);
         calendar = Calendar.getInstance();
         updateDateTimeDisplay();
@@ -98,9 +126,12 @@ public class EcosDaCamaActivity extends AppCompatActivity {
                 tvSignificado.setVisibility(View.VISIBLE);
                 tvSignificado.setText(significado);
                 significadoDoSonho = significado;
+                descricaoBaseComSignificado = descricao != null ? descricao : "";
+                estiloBaseComSignificado = spinnerPromptStyle.getSelectedItemPosition();
             }
         }
 
+        atualizarVisibilidadeBotaoSignificado();
         tvDate.setOnClickListener(v -> showDatePicker());
         tvTime.setOnClickListener(v -> showTimePicker());
 
@@ -251,6 +282,9 @@ public class EcosDaCamaActivity extends AppCompatActivity {
                             JSONObject respostaJson = new JSONObject(resposta);
                             significadoDoSonho = respostaJson.getString("significado");
                             tvSignificado.setText(significadoDoSonho);
+                            descricaoBaseComSignificado = editSonho.getText().toString();
+                            estiloBaseComSignificado = spinnerPromptStyle.getSelectedItemPosition();
+                            atualizarVisibilidadeBotaoSignificado();
                         } catch (JSONException e) {
                             tvSignificado.setText("Erro ao processar a resposta.");
                             significadoDoSonho = "";
@@ -266,5 +300,16 @@ public class EcosDaCamaActivity extends AppCompatActivity {
                 significadoDoSonho = "";
             }
         }).start();
+    }
+    private void atualizarVisibilidadeBotaoSignificado() {
+        String descricaoAtual = editSonho.getText().toString();
+        int estiloAtual = spinnerPromptStyle.getSelectedItemPosition();
+
+        boolean semSignificado = significadoDoSonho == null || significadoDoSonho.trim().isEmpty();
+        boolean descricaoMudou = !descricaoAtual.equals(descricaoBaseComSignificado);
+        boolean estiloMudou = estiloAtual != estiloBaseComSignificado;
+
+        boolean deveExibir = semSignificado || descricaoMudou || estiloMudou;
+        btnVerSignificado.setVisibility(deveExibir ? View.VISIBLE : View.GONE);
     }
 }
